@@ -1,6 +1,7 @@
 spring:
   application:
-    name: email-rest-api
+    name: Email REST service
 
+# Use default port 8080.
 server:
   port: 8080
