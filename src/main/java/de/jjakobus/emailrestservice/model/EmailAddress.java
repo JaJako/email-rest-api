@@ -1,39 +1,94 @@
 package de.jjakobus.emailrestservice.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.lang.Nullable;
+
+import java.util.Objects;
+
 import static java.util.Objects.requireNonNull;
 
 /**
  * Represents an address that can be used to send and receive emails.
  *
- * @param name the pre-"@" part
- * @param domain the post-"@" part
- * @param displayName more descriptive name to display (e.g. "Peter Mueller <peter.mueller(a)gmx.net>").
  * @author jjakobus
  */
-public record EmailAddress(
-    String name,
-    String domain,
-    String displayName
-) {
+@Entity
+public class EmailAddress {
 
-  /** Format of an email address. */
-  private static final String EMAIL_ADDRESS_FORMAT = "%s@%s";
+  /** The unique email address. */
+  @Id
+  @NotNull
+  private String address;
 
-  public EmailAddress(
-      String name,
-      String domain,
-      String displayName) {
-    this.name = requireNonNull(name, "name must not be null.");
-    this.domain = requireNonNull(domain, "domain must not be null.");
-    this.displayName = requireNonNull(displayName, "displayName must not be null.");
+  /**
+   * More descriptive name to display, can be null.
+   * E.g. "Peter Mueller <peter.mueller(a)gmx.de>".
+   */
+  private String displayName;
+
+  /* constructors */
+
+  protected EmailAddress() {
+    // Required by JPA.
   }
 
   /**
-   * Returns the full email address as a string.
+   * Creates a new email address.
    *
-   * @return full email address
+   * @param address unique email address
+   * @param displayName more descriptive name to display (can be null)
    */
-  public String toFullAddress() {
-    return String.format(EMAIL_ADDRESS_FORMAT, name, domain);
+  public EmailAddress(
+      String address,
+      @Nullable String displayName) {
+    this.address = requireNonNull(address, "address must not be null.");
+    this.displayName = displayName;
+  }
+
+  /* getter + setter */
+
+  public String getAddress() {
+    return address;
+  }
+
+  public void setAddress(String address) {
+    this.address = requireNonNull(address, "address must not be null.");
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(@Nullable String displayName) {
+    this.displayName = displayName;
+  }
+
+  /* equals, hashCode, toString */
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    EmailAddress that = (EmailAddress) o;
+    return Objects.equals(address, that.address);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(address);
+  }
+
+  @Override
+  public String toString() {
+    return "EmailAddress{" +
+        "address='" + address + '\'' +
+        ", displayName='" + displayName + '\'' +
+        '}';
   }
 }

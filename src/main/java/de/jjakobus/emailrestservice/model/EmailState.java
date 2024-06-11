@@ -13,7 +13,7 @@ public enum EmailState {
   /** An email that has been sent. */
   SENT,
 
-  /** An email that has been deleted. */
+  /** An email that has been deleted, e.g. moved to trash bin. */
   DELETED,
 
   /** An email that has been classified as spam. */
