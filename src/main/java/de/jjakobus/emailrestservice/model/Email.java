@@ -34,19 +34,19 @@ public class Email {
   /** The sender of the email */
   @NotNull
   @ManyToOne
-  @JoinColumn(unique = true, updatable = false)
+  @JoinColumn(updatable = false)
   private EmailAddress from;
 
   /** The main receivers of the email. */
   @NotNull
   @ManyToMany
-  @JoinTable(joinColumns = @JoinColumn(unique = true))
+  @JoinTable
   private List<EmailAddress> to;
 
   /** The "carbon copy" receivers of the mail. */
   @NotNull
   @ManyToMany
-  @JoinTable(joinColumns = @JoinColumn(unique = true))
+  @JoinTable
   private List<EmailAddress> cc;
 
   /** Subject of the email (can be empty). */
