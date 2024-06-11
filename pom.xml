@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Use Spring Boot Parent as foundation. -->
+    <!-- Use Spring Boot Parent as foundation of app. -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -12,34 +12,48 @@
         <relativePath/>
     </parent>
 
+    <!-- Definition of Maven artifact. -->
     <groupId>de.jjakobus</groupId>
     <artifactId>email-rest-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-
     <name>email-rest-service</name>
     <description>email-rest-api</description>
 
+    <!-- Using Java 17 and Spring Boot 3.3.0. -->
     <properties>
         <java.version>17</java.version>
+        <springboot.version>3.3.0</springboot.version>
     </properties>
 
     <dependencies>
+        <!-- Base Spring Boot package. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+            <version>${springboot.version}</version>
         </dependency>
+        <!-- Additional useful components to run a web app. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${springboot.version}</version>
+        </dependency>
+        <!-- Spring Boot test components, includes JUnit5, AssertJ, Mockito, ... -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>${springboot.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Plugin for Building Spring Boot application using Maven. -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${springboot.version}</version>
             </plugin>
         </plugins>
     </build>
