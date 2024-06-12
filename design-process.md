@@ -49,12 +49,14 @@ there is [InsertNewEmailDto.java](src/main/java/de/jjakobus/emailrestservice/mod
 
 The controller defines the REST endpoints needed for required CRUD operations. There are these four endpoints:
 
-| # | CRUD   | path           | method | success code  | return type | failure code(s) |
-|---|--------|----------------|--------|---------------|-------------|-----------------|
-| 1 | Create | /insert        | POST   | 201 (created) | EmailDto    | 500 (error)     |
-| 3 | Read   | /query?id={id} | GET    | 200 (ok)      | EmailDto    | 404 (not found) |
-| 4 | Update | /update        | PUT    | 200 (ok)      | /           | 404 (not found) |
-| 5 | Delete | /delete/{id}   | DELETE | 200 (ok)      | /           | 404 (not found) |
+| # | CRUD   | path           | method | success code  | return type | failure code(s)                    |
+|---|--------|----------------|--------|---------------|-------------|------------------------------------|
+| 1 | Create | /insert        | POST   | 201 (created) | EmailDto    | /                                  |
+| 3 | Read   | /query?id={id} | GET    | 200 (ok)      | EmailDto    | 404 (not found)                    |
+| 4 | Update | /update/{id}   | PUT    | 200 (ok)      | /           | 400 (bad request), 404 (not found) |
+| 5 | Delete | /delete/{id}   | DELETE | 200 (ok)      | /           | 404 (not found)                    |
+
+Create, Read and Delete do offer bulk operations by specifying request/url parameter "bulk".
 
 Details on Services (types)...
 
@@ -62,12 +64,18 @@ Details on Services (types)...
 
 To start of with a simple _Spring Boot_ maven project template has been generated (using IntelliJ).
 
-Approaching this task in test-driven development manner, next step has been the creation of a service-scaled (
-integration) test: [EmailRestServiceAppIT.java](src/test/java/de/jjakobus/emailrestservice/EmailRestServiceAppIT.java).
+Approaching this task in test-driven development manner, next step has been the creation of a whole-service-scaled
+integration test: [EmailRestServiceAppIT.java](src/test/java/de/jjakobus/emailrestservice/EmailRestServiceAppIT.java).
 The test covers all HTTP endpoints specified in the task. Authentic test data is used to validate all "layers" of
 application are working as expected when the application is run together with its web server. To cover all scenarios of
 request-response or input/output pairs the unit tests to be defined are used.
 
 In the process of creating the test cases, types/classes used in the application and needed for creating example data in
 the tests have been created and defined in their features. In the first step "drafts" for those types were created.
-After setting up the database connection using Spring JPA, entities and DTOs were created from previous "draft" types .
+After setting up the database connection using Spring JPA, entities and DTOs were created from previous "draft" types (
+see model's description above in [Architecture](#architecture)).
+
+Next needed controller endpoints are added as specified by the whole-application integration
+test ([EmailRestServiceAppIT.java](src/test/java/de/jjakobus/emailrestservice/EmailRestServiceAppIT.java)). Based on
+this endpoints a unit test for the controller is created and test cases covering all request-response pairs possible are
+implemented. Services used by the controller are mocked to focus the unit test on the controller only.

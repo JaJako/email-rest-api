@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -131,6 +132,37 @@ class EmailRestServiceAppIT {
         .returns(true, returnedEmail::equals);
   }
 
+  @Test
+  void shouldInsertMultipleMails() {
+    // Given
+    List<InsertEmailDto> newEmails = List.of(getNewEmail(), getNewEmail());
+
+    // When
+    ResponseEntity<List<EmailDto>> response =
+        restTemplate.exchange(
+            baseRequestAddress + "/insert",
+            HttpMethod.POST,
+            new HttpEntity<>(newEmails),
+            new ParameterizedTypeReference<>() {
+            });
+    List<EmailDto> returnedEmails = response.getBody();
+
+    // Then
+    assertThat(response.getStatusCode())
+        .as("HTTP status should be 201 (created).")
+        .isEqualTo(HttpStatus.CREATED);
+    assertThat(returnedEmails)
+        .as("Returned emails should be present (not null) and be no empty list.")
+        .isNotNull().isNotEmpty()
+        .as("Returned stored email should contain all information from inserted email.")
+        .allMatch(storedEmail -> containsAllInformationFromInsertDto(storedEmail, newEmails.get(0)))
+        .as("Service-side mails should be equal to returned emails.")
+        .allMatch(email ->
+            emailRepository.findEmailById(email.id())
+                .filter(email::equals)
+                .isPresent());
+  }
+
   /**
    * Checks whether given {@link EmailDto} contains all the information given by the {@link InsertEmailDto}.
    *
@@ -177,6 +209,7 @@ class EmailRestServiceAppIT {
   void shouldUpdateMail() {
     // Given
     EmailDto draftEmail = getStoredDraftEmail();
+    long emailId = draftEmail.id(); // Use ID of stored email to update.
     EmailDto updatedEmail =
         new EmailDto(
             draftEmail.id(),
@@ -191,7 +224,7 @@ class EmailRestServiceAppIT {
     // When
     ResponseEntity<String> response =
         restTemplate.exchange(
-            baseRequestAddress + "/update",
+            baseRequestAddress + "/update/" + emailId,
             HttpMethod.PUT,
             new HttpEntity<>(updatedEmail),
             String.class); // There will be no response value, but type is needed anyway, so use String.

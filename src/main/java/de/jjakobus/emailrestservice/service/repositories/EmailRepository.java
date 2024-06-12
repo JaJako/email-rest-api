@@ -1,4 +1,4 @@
-package de.jjakobus.emailrestservice.service;
+package de.jjakobus.emailrestservice.service.repositories;
 
 import de.jjakobus.emailrestservice.model.Email;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
@@ -12,7 +12,7 @@ import java.util.Optional;
  *
  * @author jjakobus
  */
-public interface EmailRepositoryService extends CrudRepository<Email, Long> {
+public interface EmailRepository extends CrudRepository<Email, Long> {
 
   /*
    * Custom query definitions that use EmailDto (the DTO record) as return type.
