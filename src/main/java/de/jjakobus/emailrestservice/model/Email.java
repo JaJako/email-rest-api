@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,7 +55,7 @@ public class Email {
 
   /** The date the email was modified last. */
   @NotNull
-  private LocalDateTime modifiedDate;
+  private Date modifiedDate;
 
 
   /* constructors */
@@ -82,7 +82,7 @@ public class Email {
       List<EmailAddress> cc,
       String subject,
       String body,
-      LocalDateTime modifiedDate) {
+      Date modifiedDate) {
     this.state = requireNonNull(state, "state must not be null.");
     this.from = requireNonNull(from, "from must not be null.");
     this.to = requireNonNull(to, "to must not be null.");
@@ -169,11 +169,11 @@ public class Email {
     this.body = requireNonNull(body, "body must not be null.");
   }
 
-  public LocalDateTime getModifiedDate() {
+  public Date getModifiedDate() {
     return modifiedDate;
   }
 
-  public void setModifiedDate(LocalDateTime modifiedDate) {
+  public void setModifiedDate(Date modifiedDate) {
     this.modifiedDate = requireNonNull(modifiedDate, "modifiedDate must not be null.");
   }
 

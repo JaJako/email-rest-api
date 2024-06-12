@@ -2,7 +2,7 @@ package de.jjakobus.emailrestservice.model.dtos;
 
 import de.jjakobus.emailrestservice.model.EmailState;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -26,7 +26,7 @@ public record InsertEmailDto(
     List<EmailAddressDto> cc,
     String subject,
     String body,
-    LocalDateTime modifiedDate) {
+    Date modifiedDate) {
 
   public InsertEmailDto(
       EmailState state,
@@ -35,7 +35,7 @@ public record InsertEmailDto(
       List<EmailAddressDto> cc,
       String subject,
       String body,
-      LocalDateTime modifiedDate) {
+      Date modifiedDate) {
     this.state = requireNonNull(state, "state must not be null.");
     this.from = requireNonNull(from, "from must not be null.");
     this.to = requireNonNull(to, "to must not be null.");

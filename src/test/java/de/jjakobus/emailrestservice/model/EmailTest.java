@@ -4,7 +4,7 @@ import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +19,7 @@ class EmailTest {
   @Test
   void shouldMapToDtoWithAllInformation() {
     // Given
-    LocalDateTime date = LocalDateTime.now();
+    Date date = new Date();
     Email entity = new Email(
         EmailState.DRAFT,
         getExampleAddress(),
@@ -50,7 +50,7 @@ class EmailTest {
   @Test
   void shouldMapToDtoWithMinimalInformation() {
     // Given
-    LocalDateTime date = LocalDateTime.now();
+    Date date = new Date();
     Email entity = new Email(
         EmailState.DRAFT,
         getExampleAddress(),

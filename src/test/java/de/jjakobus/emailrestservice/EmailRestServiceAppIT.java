@@ -24,7 +24,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -96,7 +96,7 @@ class EmailRestServiceAppIT {
         List.of(),
         "Sample subject",
         "Sample body content.",
-        LocalDateTime.now());
+        new Date());
     emailRepository.save(exampleEntity);
   }
 
@@ -186,7 +186,7 @@ class EmailRestServiceAppIT {
             draftEmail.cc(),
             "Changed subject",
             "new body content",
-            LocalDateTime.now());
+            new Date());
 
     // When
     ResponseEntity<String> response =
@@ -249,7 +249,7 @@ class EmailRestServiceAppIT {
         List.of(),
         "Draft subject",
         "Hello,\n\nGoodbye!",
-        LocalDateTime.of(2024, 5, 31, 10, 8, 54)
+        new Date()
     );
   }
 
@@ -268,7 +268,7 @@ class EmailRestServiceAppIT {
         List.of(),
         "Very important, please respond!",
         "Forgot what I want to tell you.",
-        LocalDateTime.of(2024, 6, 3, 12, 48, 32)
+        new Date()
     );
   }
 }
