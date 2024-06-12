@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
  * @param cc "carbon copy" receiver addresses
  * @param subject subject of the email
  * @param body content
- * @param date date of the email received (e.g. date of receiving or date of sent)
+ * @param modifiedDate date of the email received (= last modification date)
  * @author jjakobus
  */
 public record InsertReceivedEmailDto(
@@ -26,7 +26,7 @@ public record InsertReceivedEmailDto(
     List<EmailAddressDto> cc,
     String subject,
     String body,
-    LocalDateTime date) {
+    LocalDateTime modifiedDate) {
 
   public InsertReceivedEmailDto(
       EmailAddressDto from,
@@ -34,13 +34,13 @@ public record InsertReceivedEmailDto(
       List<EmailAddressDto> cc,
       String subject,
       String body,
-      LocalDateTime date) {
+      LocalDateTime modifiedDate) {
     this.from = requireNonNull(from, "from must not be null.");
     this.to = requireNonNull(to, "to must not be null.");
     this.cc = requireNonNull(cc, "cc must not be null.");
     this.subject = requireNonNull(subject, "subject must not be null.");
     this.body = requireNonNull(body, "body must not be null.");
-    this.date = requireNonNull(date, "date must not be null.");
+    this.modifiedDate = requireNonNull(modifiedDate, "modifiedDate must not be null.");
   }
 
   /**

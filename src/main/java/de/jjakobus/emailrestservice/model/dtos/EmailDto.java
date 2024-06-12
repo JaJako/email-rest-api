@@ -17,8 +17,7 @@ import static java.util.Objects.requireNonNull;
  * @param cc the "carbon copy" receivers of the mail
  * @param subject subject of the email (can be empty)
  * @param body body (the main content) of the mail (can be empty)
- * @param creationDate the date the email was created
- * @param modificationDate the date the email was modified last
+ * @param modifiedDate the date the email was modified last
  * @author jjakobus
  */
 public record EmailDto(
@@ -29,8 +28,7 @@ public record EmailDto(
     List<EmailAddressDto> cc,
     String subject,
     String body,
-    LocalDateTime creationDate,
-    LocalDateTime modificationDate) {
+    LocalDateTime modifiedDate) {
 
   public EmailDto(
       long id,
@@ -40,8 +38,7 @@ public record EmailDto(
       List<EmailAddressDto> cc,
       String subject,
       String body,
-      LocalDateTime creationDate,
-      LocalDateTime modificationDate) {
+      LocalDateTime modifiedDate) {
     this.id = id;
     this.state = requireNonNull(state, "state must not be null.");
     this.from = requireNonNull(from, "from must not be null.");
@@ -49,7 +46,6 @@ public record EmailDto(
     this.cc = requireNonNull(cc, "cc must not be null.");
     this.subject = requireNonNull(subject, "subject must not be null.");
     this.body = requireNonNull(body, "body must not be null.");
-    this.creationDate = requireNonNull(creationDate, "creationDate must not be null.");
-    this.modificationDate = requireNonNull(modificationDate, "modificationDate must not be null.");
+    this.modifiedDate = requireNonNull(modifiedDate, "modifiedDate must not be null.");
   }
 }

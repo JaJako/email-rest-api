@@ -56,13 +56,9 @@ public class Email {
   @NotNull
   private String body;
 
-  /** The date the email was created. */
-  @NotNull
-  private LocalDateTime creationDate;
-
   /** The date the email was modified last. */
   @NotNull
-  private LocalDateTime modificationDate;
+  private LocalDateTime modifiedDate;
 
 
   /* constructors */
@@ -80,8 +76,7 @@ public class Email {
    * @param cc cc receivers (can be an empty list)
    * @param subject subject of the email (can be an empty string)
    * @param body main content (can be an empty string)
-   * @param creationDate date of creation
-   * @param modificationDate date of last modification
+   * @param modifiedDate date of last modification
    */
   public Email(
       EmailState state,
@@ -90,16 +85,14 @@ public class Email {
       List<EmailAddress> cc,
       String subject,
       String body,
-      LocalDateTime creationDate,
-      LocalDateTime modificationDate) {
+      LocalDateTime modifiedDate) {
     this.state = requireNonNull(state, "state must not be null.");
     this.from = requireNonNull(from, "from must not be null.");
     this.to = requireNonNull(to, "to must not be null.");
     this.cc = requireNonNull(cc, "cc must not be null.");
     this.subject = requireNonNull(subject, "subject must not be null.");
     this.body = requireNonNull(body, "body must not be null.");
-    this.creationDate = requireNonNull(creationDate, "creationDate must not be null.");
-    this.modificationDate = requireNonNull(modificationDate, "modificationDate must not be null.");
+    this.modifiedDate = requireNonNull(modifiedDate, "modifiedDate must not be null.");
   }
 
   /**
@@ -118,9 +111,7 @@ public class Email {
         cc.stream().map(EmailAddress::toDto).toList(),
         subject,
         body,
-        creationDate,
-        modificationDate
-    );
+        modifiedDate);
   }
 
   /* getter + setter methods. */
@@ -181,20 +172,12 @@ public class Email {
     this.body = requireNonNull(body, "body must not be null.");
   }
 
-  public LocalDateTime getCreationDate() {
-    return creationDate;
+  public LocalDateTime getModifiedDate() {
+    return modifiedDate;
   }
 
-  public void setCreationDate(LocalDateTime creationDate) {
-    this.creationDate = requireNonNull(creationDate, "creationDate must not be null.");
-  }
-
-  public LocalDateTime getModificationDate() {
-    return modificationDate;
-  }
-
-  public void setModificationDate(LocalDateTime modificationDate) {
-    this.modificationDate = requireNonNull(modificationDate, "modificationDate must not be null.");
+  public void setModifiedDate(LocalDateTime modifiedDate) {
+    this.modifiedDate = requireNonNull(modifiedDate, "modifiedDate must not be null.");
   }
 
   /* equals, hashCode, toString */
@@ -213,13 +196,12 @@ public class Email {
         && Objects.equals(to, email.to)
         && Objects.equals(cc, email.cc)
         && Objects.equals(body, email.body)
-        && Objects.equals(creationDate, email.creationDate)
-        && Objects.equals(modificationDate, email.modificationDate);
+        && Objects.equals(modifiedDate, email.modifiedDate);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(state, from, to, cc, body, creationDate, modificationDate);
+    return Objects.hash(state, from, to, cc, body, modifiedDate);
   }
 
   @Override
@@ -231,8 +213,7 @@ public class Email {
         ", to=" + to +
         ", cc=" + cc +
         ", body='" + body + '\'' +
-        ", creationDate=" + creationDate +
-        ", modificationDate=" + modificationDate +
+        ", modifiedDate=" + modifiedDate +
         '}';
   }
 }

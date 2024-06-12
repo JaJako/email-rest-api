@@ -7,10 +7,8 @@ import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertDraftEmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertReceivedEmailDto;
-import de.jjakobus.emailrestservice.service.EmailAddressRepositoryService;
-import de.jjakobus.emailrestservice.service.EmailRepositoryService;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import de.jjakobus.emailrestservice.service.repositories.EmailAddressRepository;
+import de.jjakobus.emailrestservice.service.repositories.EmailRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +50,9 @@ class EmailRestServiceAppIT {
   private static final String HOST_ADDRESS = "http://localhost";
   private static final String PATH = "/emails-test";
 
+  /**
+   * Postgres docker container for this integration test.
+   */
   @Container
   @ServiceConnection
   @SuppressWarnings("resource") // Misleading warning about closable container when chaining with...() calls.
@@ -62,17 +63,6 @@ class EmailRestServiceAppIT {
           .withPassword("test")
           .withExposedPorts(5432);
 
-  @BeforeAll
-  static void startPostgresContainer() {
-    postgresContainer.start();
-  }
-
-  @AfterAll
-  static void stopPostgresContainer() {
-    postgresContainer.stop();
-    postgresContainer.close();
-  }
-
   /** The random port used for the application in test. */
   @LocalServerPort
   private int port;
@@ -81,11 +71,13 @@ class EmailRestServiceAppIT {
   @Autowired
   private TestRestTemplate restTemplate;
 
+  /** Repository of email addresses in database. */
   @Autowired
-  private EmailAddressRepositoryService addressRepository;
+  private EmailAddressRepository addressRepository;
 
+  /** Repository of emails in database. */
   @Autowired
-  private EmailRepositoryService emailRepository;
+  private EmailRepository emailRepository;
 
   /** Base address for requests. */
   private String baseRequestAddress;
@@ -112,7 +104,6 @@ class EmailRestServiceAppIT {
         List.of(),
         "Sample subject",
         "Sample body content.",
-        LocalDateTime.now(),
         LocalDateTime.now());
     emailRepository.save(exampleEntity);
   }
@@ -213,8 +204,7 @@ class EmailRestServiceAppIT {
         && insertDto.cc().equals(email.cc())
         && insertDto.subject().equals(email.subject())
         && insertDto.body().equals(email.body())
-        && insertDto.date().equals(email.creationDate())
-        && email.creationDate().equals(email.modificationDate()); // Creation and modification date should be equal.
+        && insertDto.modifiedDate().equals(email.modifiedDate());
   }
 
   @Test
@@ -252,7 +242,6 @@ class EmailRestServiceAppIT {
             draftEmail.cc(),
             "Changed subject",
             "new body content",
-            draftEmail.creationDate(),
             LocalDateTime.now());
 
     // When
@@ -316,7 +305,6 @@ class EmailRestServiceAppIT {
         List.of(),
         "Draft subject",
         "Hello,\n\nGoodbye!",
-        LocalDateTime.of(2024, 5, 29, 15, 12, 30),
         LocalDateTime.of(2024, 5, 31, 10, 8, 54)
     );
   }

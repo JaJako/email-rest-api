@@ -27,7 +27,6 @@ class EmailTest {
         List.of(getExampleAddress(), getExampleAddress()),
         "Subject string",
         "Body string",
-        date,
         date);
     EmailDto expectedDto = new EmailDto(
         entity.getId(),
@@ -37,7 +36,6 @@ class EmailTest {
         List.of(getExampleAddressDto(), getExampleAddressDto()),
         "Subject string",
         "Body string",
-        date,
         date);
 
     // When
@@ -60,7 +58,6 @@ class EmailTest {
         List.of(),
         "",
         "",
-        date,
         date);
     EmailDto expectedDto = new EmailDto(
         entity.getId(),
@@ -70,7 +67,6 @@ class EmailTest {
         List.of(),
         "",
         "",
-        date,
         date);
 
     // When
