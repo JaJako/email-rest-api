@@ -5,8 +5,7 @@ import de.jjakobus.emailrestservice.model.EmailAddress;
 import de.jjakobus.emailrestservice.model.EmailState;
 import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
-import de.jjakobus.emailrestservice.model.dtos.InsertDraftEmailDto;
-import de.jjakobus.emailrestservice.model.dtos.InsertReceivedEmailDto;
+import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
 import de.jjakobus.emailrestservice.service.repositories.EmailAddressRepository;
 import de.jjakobus.emailrestservice.service.repositories.EmailRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,15 +110,15 @@ class EmailRestServiceAppIT {
   /* Test CRUD endpoints exemplary. */
 
   @Test
-  void shouldInsertDraftMail() {
+  void shouldInsertMail() {
     // Given
-    InsertDraftEmailDto newDraftEmail = getNewDraftEmail();
+    InsertEmailDto newEmail = getNewEmail();
 
     // When
     ResponseEntity<EmailDto> response =
         restTemplate.postForEntity(
-            baseRequestAddress + "/insert-draft",
-            newDraftEmail,
+            baseRequestAddress + "/insert",
+            newEmail,
             EmailDto.class);
     EmailDto returnedEmail = response.getBody();
 
@@ -130,8 +129,8 @@ class EmailRestServiceAppIT {
     assertThat(returnedEmail)
         .as("Returned email should be present (not null).")
         .isNotNull()
-        .as("Returned stored email should contain all information from inserted draft email.")
-        .matches(email -> containsAllInformationFromInsertDraftDto(email, newDraftEmail));
+        .as("Returned stored email should contain all information from inserted email.")
+        .matches(storedEmail -> containsAllInformationFromInsertDto(storedEmail, newEmail));
     assertThat(emailRepository.findEmailById(returnedEmail.id()))
         .as("Inserted email should be present in store.")
         .isPresent().get()
@@ -140,63 +139,15 @@ class EmailRestServiceAppIT {
   }
 
   /**
-   * Checks whether given {@link EmailDto} contains all the information given by the {@link InsertDraftEmailDto}.
+   * Checks whether given {@link EmailDto} contains all the information given by the {@link InsertEmailDto}.
    *
    * @param email email to check
-   * @param insertDto inserted draft email
+   * @param insertDto inserted email
    * @return whether email contains all information
    */
-  private static boolean containsAllInformationFromInsertDraftDto(
+  private static boolean containsAllInformationFromInsertDto(
       EmailDto email,
-      InsertDraftEmailDto insertDto) {
-
-    return insertDto.state().equals(EmailState.DRAFT)
-        && insertDto.from().equals(email.from())
-        && insertDto.to().equals(email.to())
-        && insertDto.cc().equals(email.cc())
-        && insertDto.subject().equals(email.subject())
-        && insertDto.body().equals(email.body());
-  }
-
-  @Test
-  void shouldInsertReceivedMail() {
-    // Given
-    InsertReceivedEmailDto newReceivedEmail = getNewReceivedEmail();
-
-    // When
-    ResponseEntity<EmailDto> response =
-        restTemplate.postForEntity(
-            baseRequestAddress + "/insert-received",
-            newReceivedEmail,
-            EmailDto.class);
-    EmailDto returnedEmail = response.getBody();
-
-    // Then
-    assertThat(response.getStatusCode())
-        .as("HTTP status should be 201 (created).")
-        .isEqualTo(HttpStatus.CREATED);
-    assertThat(returnedEmail)
-        .as("Returned email should be present (not null).")
-        .isNotNull()
-        .as("Returned stored email should contain all information from inserted received email.")
-        .matches(email -> containsAllInformationFromInsertReceivedDto(email, newReceivedEmail));
-    assertThat(emailRepository.findEmailById(returnedEmail.id()))
-        .as("Inserted email should be present in store.")
-        .isPresent().get()
-        .as("Service-side mail should be equal to returned email.")
-        .returns(true, returnedEmail::equals);
-  }
-
-  /**
-   * Checks whether given {@link EmailDto} contains all the information given by the {@link InsertReceivedEmailDto}.
-   *
-   * @param email email to check
-   * @param insertDto inserted received email
-   * @return whether email contains all information
-   */
-  private static boolean containsAllInformationFromInsertReceivedDto(
-      EmailDto email,
-      InsertReceivedEmailDto insertDto) {
+      InsertEmailDto insertDto) {
 
     return insertDto.state().equals(EmailState.SENT)
         && insertDto.from().equals(email.from())
@@ -310,29 +261,14 @@ class EmailRestServiceAppIT {
   }
 
   /**
-   * Returns a new draft email that is not stored in database yet.
+   * Returns a new email that is not stored in database yet.
    *
-   * @return new draft email
+   * @return new email
    */
-  private static InsertDraftEmailDto getNewDraftEmail() {
+  private static InsertEmailDto getNewEmail() {
 
-    return new InsertDraftEmailDto(
-        new EmailAddressDto("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>"),
-        List.of(),
-        List.of(),
-        "Test subject",
-        ""
-    );
-  }
-
-  /**
-   * Returns a new received email that is not stored in database yet.
-   *
-   * @return new received email
-   */
-  private static InsertReceivedEmailDto getNewReceivedEmail() {
-
-    return new InsertReceivedEmailDto(
+    return new InsertEmailDto(
+        EmailState.DRAFT,
         new EmailAddressDto("juergen.vogel@web.de", null),
         List.of(
             new EmailAddressDto("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>")),
