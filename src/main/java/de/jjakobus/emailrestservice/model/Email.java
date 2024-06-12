@@ -1,9 +1,8 @@
 package de.jjakobus.emailrestservice.model;
 
+import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -59,12 +58,10 @@ public class Email {
 
   /** The date the email was created. */
   @NotNull
-  @CreatedDate
   private LocalDateTime creationDate;
 
   /** The date the email was modified last. */
   @NotNull
-  @LastModifiedDate
   private LocalDateTime modificationDate;
 
 
@@ -83,6 +80,8 @@ public class Email {
    * @param cc cc receivers (can be an empty list)
    * @param subject subject of the email (can be an empty string)
    * @param body main content (can be an empty string)
+   * @param creationDate date of creation
+   * @param modificationDate date of last modification
    */
   public Email(
       EmailState state,
@@ -90,14 +89,38 @@ public class Email {
       List<EmailAddress> to,
       List<EmailAddress> cc,
       String subject,
-      String body
-  ) {
+      String body,
+      LocalDateTime creationDate,
+      LocalDateTime modificationDate) {
     this.state = requireNonNull(state, "state must not be null.");
     this.from = requireNonNull(from, "from must not be null.");
     this.to = requireNonNull(to, "to must not be null.");
     this.cc = requireNonNull(cc, "cc must not be null.");
     this.subject = requireNonNull(subject, "subject must not be null.");
     this.body = requireNonNull(body, "body must not be null.");
+    this.creationDate = requireNonNull(creationDate, "creationDate must not be null.");
+    this.modificationDate = requireNonNull(modificationDate, "modificationDate must not be null.");
+  }
+
+  /**
+   * Creates a new {@link EmailDto} with information from this {@link Email} entity. DTO captures the entities' current
+   * state and is equal (information-wise). Updates to the entity are not reflected by the DTO.
+   *
+   * @return new DTO instance
+   */
+  public EmailDto toDto() {
+
+    return new EmailDto(
+        id,
+        state,
+        from.toDto(),
+        to.stream().map(EmailAddress::toDto).toList(),
+        cc.stream().map(EmailAddress::toDto).toList(),
+        subject,
+        body,
+        creationDate,
+        modificationDate
+    );
   }
 
   /* getter + setter methods. */

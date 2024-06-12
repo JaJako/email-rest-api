@@ -1,5 +1,6 @@
 package de.jjakobus.emailrestservice.model;
 
+import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
@@ -45,6 +46,19 @@ public class EmailAddress {
       @Nullable String displayName) {
     this.address = requireNonNull(address, "address must not be null.");
     this.displayName = displayName;
+  }
+
+  /**
+   * Creates a new {@link EmailAddressDto} with information from this {@link EmailAddress} entity. DTO captures the
+   * entities' current state and is equal (information-wise). Updates to the entity are not reflected by the DTO.
+   *
+   * @return new DTO instance
+   */
+  public EmailAddressDto toDto() {
+
+    return new EmailAddressDto(
+        address,
+        displayName);
   }
 
   /* getter + setter */
