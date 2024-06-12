@@ -6,7 +6,6 @@ import de.jjakobus.emailrestservice.model.EmailState;
 import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
-import de.jjakobus.emailrestservice.service.repositories.EmailAddressRepository;
 import de.jjakobus.emailrestservice.service.repositories.EmailRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,10 +69,6 @@ class EmailRestServiceAppIT {
   @Autowired
   private TestRestTemplate restTemplate;
 
-  /** Repository of email addresses in database. */
-  @Autowired
-  private EmailAddressRepository addressRepository;
-
   /** Repository of emails in database. */
   @Autowired
   private EmailRepository emailRepository;
@@ -94,8 +89,6 @@ class EmailRestServiceAppIT {
     // Insert new test data.
     EmailAddress addressEntity = new EmailAddress("sample.address@domain.de", "Sample Address");
     EmailAddress addressEntity2 = new EmailAddress("peter.mueller@gmx.de", null);
-    addressRepository.saveAll(List.of(addressEntity, addressEntity2));
-
     Email exampleEntity = new Email(
         EmailState.DRAFT,
         addressEntity,

@@ -1,8 +1,7 @@
 package de.jjakobus.emailrestservice.model;
 
 import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
 
@@ -15,11 +14,10 @@ import static java.util.Objects.requireNonNull;
  *
  * @author jjakobus
  */
-@Entity
+@Embeddable
 public class EmailAddress {
 
   /** The unique email address. */
-  @Id
   @NotNull
   private String address;
 

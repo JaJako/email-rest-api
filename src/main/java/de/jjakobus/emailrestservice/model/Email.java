@@ -32,20 +32,17 @@ public class Email {
 
   /** The sender of the email */
   @NotNull
-  @ManyToOne
-  @JoinColumn(updatable = false)
+  @Embedded
   private EmailAddress from;
 
   /** The main receivers of the email. */
   @NotNull
-  @ManyToMany
-  @JoinTable
+  @ElementCollection
   private List<EmailAddress> to;
 
   /** The "carbon copy" receivers of the mail. */
   @NotNull
-  @ManyToMany
-  @JoinTable
+  @ElementCollection
   private List<EmailAddress> cc;
 
   /** Subject of the email (can be empty). */
