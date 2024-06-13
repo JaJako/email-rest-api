@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static de.jjakobus.emailrestservice.EmailTestUtils.containsAllInformationFromInsertDto;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -161,26 +162,6 @@ class EmailRestServiceAppIT {
             emailRepository.findEmailById(email.id())
                 .filter(email::equals)
                 .isPresent());
-  }
-
-  /**
-   * Checks whether given {@link EmailDto} contains all the information given by the {@link InsertEmailDto}.
-   *
-   * @param email email to check
-   * @param insertDto inserted email
-   * @return whether email contains all information
-   */
-  private static boolean containsAllInformationFromInsertDto(
-      EmailDto email,
-      InsertEmailDto insertDto) {
-
-    return insertDto.state().equals(EmailState.SENT)
-        && insertDto.from().equals(email.from())
-        && insertDto.to().equals(email.to())
-        && insertDto.cc().equals(email.cc())
-        && insertDto.subject().equals(email.subject())
-        && insertDto.body().equals(email.body())
-        && insertDto.modifiedDate().equals(email.modifiedDate());
   }
 
   @Test

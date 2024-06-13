@@ -3,8 +3,6 @@ package de.jjakobus.emailrestservice.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
-import de.jjakobus.emailrestservice.model.EmailState;
-import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
 import de.jjakobus.emailrestservice.model.exceptions.EmailNotFoundException;
@@ -26,10 +24,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static de.jjakobus.emailrestservice.EmailTestUtils.createExampleEmail;
+import static de.jjakobus.emailrestservice.EmailTestUtils.createExampleInsertEmail;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.*;
@@ -345,32 +344,5 @@ class EmailRestServiceControllerTest {
     }
 
     return objJson;
-  }
-
-  private static InsertEmailDto createExampleInsertEmail() {
-
-    return new InsertEmailDto(
-        EmailState.SENT,
-        new EmailAddressDto("sample.address@domain.de", null),
-        List.of(new EmailAddressDto("peter.lustig@gmail.com", "Peter Lustig")),
-        List.of(),
-        "Löwenzahn",
-        "Planung neuer Sendung",
-        new Date());
-  }
-
-  private static EmailDto createExampleEmail(int id) {
-
-    return new EmailDto(
-        id,
-        EmailState.DRAFT,
-        new EmailAddressDto("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>"),
-        List.of(
-            new EmailAddressDto("juergen.vogel@web.de", null),
-            new EmailAddressDto("hans-peter@gmail.com", "Hans Peter")),
-        List.of(),
-        "Draft subject",
-        "Hello,\n\nGoodbye!",
-        new Date());
   }
 }
