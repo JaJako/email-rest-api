@@ -33,7 +33,7 @@ public class EmailTestUtils {
       EmailDto email,
       InsertEmailDto insertDto) {
 
-    return insertDto.state().equals(EmailState.SENT)
+    return insertDto.state().equals(email.state())
         && insertDto.from().equals(email.from())
         && insertDto.to().equals(email.to())
         && insertDto.cc().equals(email.cc())

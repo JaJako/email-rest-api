@@ -56,9 +56,15 @@ The controller defines the REST endpoints needed for required CRUD operations. T
 | 4 | Update | /update/{id}   | PUT    | 200 (ok)      | /           | 400 (bad request), 404 (not found) |
 | 5 | Delete | /delete/{id}   | DELETE | 200 (ok)      | /           | 404 (not found)                    |
 
-Create, Read and Delete do offer bulk operations by specifying request/url parameter "bulk".
+Create, Read and Delete do offer bulk operations by specifying request/url parameter "bulk" as additional endpoints.
 
-Details on Services (types)...
+There are two
+services: [EmailStoreService.java](src/main/java/de/jjakobus/emailrestservice/service/EmailStoreService.java) as a
+layer between the JPA email repository and the controller which implements all custom logic like conditions when an
+email is allowed to be updated. This way controller does not need to have this logic and be focused on handling the REST
+requests, only. [EmailSpamService.java](src/main/java/de/jjakobus/emailrestservice/service/EmailSpamService.java) is a
+service to schedule the
+regular spam classification task. It uses the store service to identify mails to be marked as spam.
 
 ## Process
 

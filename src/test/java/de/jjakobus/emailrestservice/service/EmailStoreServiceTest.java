@@ -115,10 +115,11 @@ class EmailStoreServiceTest {
   void shouldGetExistingEmail() throws EmailNotFoundException {
     // Given
     long id = 42;
+    Email existingEmailEntity = createExampleEmailEntity(id);
     EmailDto expectedExistingEmail = createExampleEmail(id);
 
-    when(emailRepository.findEmailById(id))
-        .thenReturn(Optional.of(expectedExistingEmail));
+    when(emailRepository.findById(id))
+        .thenReturn(Optional.of(existingEmailEntity));
 
     // When
     EmailDto actualExistingEmail = emailStoreService.getEmail(id);
@@ -134,7 +135,7 @@ class EmailStoreServiceTest {
     // Given
     long id = 24;
 
-    when(emailRepository.findEmailById(id))
+    when(emailRepository.findById(id))
         .thenReturn(Optional.empty());
 
     // When & Then
@@ -316,16 +317,19 @@ class EmailStoreServiceTest {
   void shouldDeleteExistingEmail() throws EmailNotFoundException {
     // Given
     long id = 42;
+    Email emailToDelete = createExampleEmailEntity(id);
+    Email expectedDeletedEmail = createExampleEmailEntity(id);
+    expectedDeletedEmail.setState(EmailState.DELETED);
 
-    when(emailRepository.existsById(id))
-        .thenReturn(true);
+    when(emailRepository.findById(id))
+        .thenReturn(Optional.of(emailToDelete));
 
     // When
     emailStoreService.deleteEmail(id);
 
     // Then
-    // Verify deleteById(...) of repository has been called with given id.
-    verify(emailRepository).deleteById(id);
+    // Verify save(...) of repository has been called with updated email.
+    verify(emailRepository).save(expectedDeletedEmail);
   }
 
   @Test
@@ -339,21 +343,32 @@ class EmailStoreServiceTest {
         .isThrownBy(() -> emailStoreService.deleteEmail(id))
         .as("Exception should contain significant keywords and given id.")
         .withMessageContainingAll("no", "email", "id", String.valueOf(id));
-    // Verify deleteById(...) of repository has NOT been called.
-    verify(emailRepository, never()).deleteById(any());
+    // Verify save(...) of repository has NOT been called.
+    verify(emailRepository, never()).save(any());
   }
 
   @Test
   void shouldDeleteMatchingEmails() {
     // Given
-    List<Long> ids = List.of(42L, 16L, 52L);
+    List<Long> ids = List.of(42L, 16L);
+
+    Email emailToDelete1 = createExampleEmailEntity(42L);
+    Email expectedDeletedEmail1 = createExampleEmailEntity(42L);
+    expectedDeletedEmail1.setState(EmailState.DELETED);
+    Email emailToDelete2 = createExampleEmailEntity(16L);
+    Email expectedDeletedEmail2 = createExampleEmailEntity(16L);
+    expectedDeletedEmail2.setState(EmailState.DELETED);
+
+    when(emailRepository.findAllById(ids))
+        .thenReturn(List.of(emailToDelete1, emailToDelete2));
+
 
     // When
     emailStoreService.deleteEmails(ids);
 
     // Then
-    // Verify deleteAllById(...) of repository has been called with given IDs.
-    verify(emailRepository).deleteAllById(ids);
+    // Verify saveAll(...) of repository has been called with updated emails.
+    verify(emailRepository).saveAll(List.of(expectedDeletedEmail1, expectedDeletedEmail2));
   }
 
   private static Email createOrigEmailOfState(long id, EmailState state) {

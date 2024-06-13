@@ -135,7 +135,8 @@ public class EmailStoreService {
    */
   public EmailDto getEmail(long id) throws EmailNotFoundException {
 
-    return emailRepository.findEmailById(id)
+    return emailRepository.findById(id)
+        .map(Email::toDto)
         .orElseThrow(() -> new EmailNotFoundException(
             String.format(MSG_NO_EMAIL_WITH_ID, id)));
   }
@@ -289,16 +290,15 @@ public class EmailStoreService {
    * @throws EmailNotFoundException no email with given id
    */
   public void deleteEmail(long id) throws EmailNotFoundException {
-    // Check if an email of with given ID exists.
-    if (emailRepository.existsById(id)) {
-      emailRepository.deleteById(id);
+    Email emailToDelete = emailRepository.findById(id)
+        .orElseThrow(() -> new EmailNotFoundException(
+            String.format(MSG_NO_EMAIL_WITH_ID, id)));
 
-    } else {
-      // If no email with ID, throw exception.
-      throw new EmailNotFoundException(
-          String.format(MSG_NO_EMAIL_WITH_ID, id));
+    // Set state to DELETED.
+    emailToDelete.setState(EmailState.DELETED);
 
-    }
+    // Save = update email.
+    emailRepository.save(emailToDelete);
   }
 
   /**
@@ -309,6 +309,13 @@ public class EmailStoreService {
   public void deleteEmails(List<Long> ids) {
     requireNonNull(ids, "ids must not be null.");
 
-    emailRepository.deleteAllById(ids);
+    Iterable<Email> emailsToDelete = emailRepository.findAllById(ids);
+    for (Email emailToDelete : emailsToDelete) {
+      // Set state to DELETED.
+      emailToDelete.setState(EmailState.DELETED);
+    }
+
+    // Save = update email.
+    emailRepository.saveAll(emailsToDelete);
   }
 }
