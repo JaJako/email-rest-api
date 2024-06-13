@@ -1,7 +1,37 @@
-spring:
-  application:
-    name: Email REST service
+# Configuration of Email REST service.
+email-rest-service:
+  # Path (prefix) for requests.
+  request-path: "/emails"
 
-# Use default port 8080.
+# Spring Boot configuration.
+spring:
+
+  # Configuration of application.
+  application:
+    name: "Email REST service"
+
+  # Configuration of datasource.
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: "jdbc:postgresql://localhost:5432/emails"
+    username: "email-service-user"
+    password: "fun-email-server"
+
+  # JPA configuration.
+  jpa:
+    hibernate:
+      # Update schema of existing tables on application start.
+      ddl-auto: update
+    # Disable warning about enabled db queries during view rendering.
+    # There is no view in this application, so no problem with it.
+    open-in-view: true
+    # Further hibernate-specific properties.
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 5
+
+# Configuration of web server.
 server:
+  # Use port 8080 (or modify if needed).
   port: 8080

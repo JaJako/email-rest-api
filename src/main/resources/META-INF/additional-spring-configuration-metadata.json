@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "email-rest-service.request-path",
+      "type": "java.lang.String",
+      "description": "(Prefix) path for requests dealing with emails."
+    }
+  ]
+}
