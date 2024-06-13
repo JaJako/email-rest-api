@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
@@ -44,8 +45,7 @@ public class EmailRestServiceController {
    */
   @ResponseStatus(HttpStatus.CREATED)
   @PostMapping(path = "/insert")
-  public EmailDto handleInsertEmail(
-      @RequestBody InsertEmailDto newEmail) {
+  public EmailDto handleInsertEmail(@RequestBody InsertEmailDto newEmail) {
 
     return emailStore.saveEmail(newEmail);
   }
@@ -58,8 +58,11 @@ public class EmailRestServiceController {
    */
   @ResponseStatus(HttpStatus.CREATED)
   @PostMapping(path = "/insert", params = "bulk")
-  public List<EmailDto> handleBulkInsertEmail(
-      @RequestBody List<InsertEmailDto> newEmails) {
+  public List<EmailDto> handleBulkInsertEmail(@RequestBody List<InsertEmailDto> newEmails) {
+    // Filter possible null values.
+    newEmails = newEmails.stream()
+        .filter(Objects::nonNull)
+        .toList();
 
     return emailStore.saveEmails(newEmails);
   }
@@ -99,6 +102,8 @@ public class EmailRestServiceController {
   @ResponseStatus(HttpStatus.OK)
   @GetMapping(path = "/query", params = "bulk")
   public List<EmailDto> handleBulkQueryEmailById(@RequestParam List<Long> ids) {
+    // No null values in list because implicit conversion from
+    // String[] (params) to List<Long> would throw exception.
 
     return emailStore.getEmails(ids);
   }
@@ -162,6 +167,8 @@ public class EmailRestServiceController {
   @ResponseStatus(HttpStatus.OK)
   @DeleteMapping(path = "/delete", params = "bulk")
   public void handleDeleteEmails(@RequestParam List<Long> ids) {
+    // No null values in list because implicit conversion from
+    // String[] (params) to List<Long> would throw exception.
 
     emailStore.deleteEmails(ids);
   }

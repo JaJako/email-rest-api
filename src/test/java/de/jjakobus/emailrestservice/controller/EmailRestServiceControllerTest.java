@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -29,6 +30,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author jjakobus
  */
 @WebMvcTest(controllers = EmailRestServiceController.class) // Fokus on EmailRestController.
-class EmailRestControllerTest {
+class EmailRestServiceControllerTest {
 
   /** Mock of email store service. */
   @MockBean
@@ -50,7 +53,7 @@ class EmailRestControllerTest {
   private MockMvc mockMvc;
 
   @Value("${email-rest-service.request-path}")
-  private String requestPath;
+  private String prefixPath;
 
   @Test
   void shouldHandleInsertEmail() throws Exception {
@@ -64,7 +67,7 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .post(requestPath + "/insert")
+            .post(prefixPath + "/insert")
             .contentType(MediaType.APPLICATION_JSON)
             .content(toJson(newEmail))
             .accept(MediaType.APPLICATION_JSON))
@@ -72,31 +75,50 @@ class EmailRestControllerTest {
         .andExpect(content().json(expectedEmailJson, true));
   }
 
-  @Test
-  void shouldHandleBulkInsertEmail() throws Exception {
+  @ParameterizedTest
+  @MethodSource("provideBulkInsertEmailParams")
+  void shouldHandleBulkInsertEmail(
+      List<InsertEmailDto> newEmails,
+      List<InsertEmailDto> filteredNewEmails,
+      List<EmailDto> expectedInsertedEmails
+  ) throws Exception {
     // Given
-    List<InsertEmailDto> newEmails = List.of(
-        createExampleInsertEmail(),
-        createExampleInsertEmail());
-
-    List<EmailDto> expectedInsertedEmails = List.of(
-        createExampleEmail(42),
-        createExampleEmail(12));
     String expectedEmailsJson = toJson(expectedInsertedEmails);
 
-
-    when(emailStore.saveEmails(newEmails))
+    when(emailStore.saveEmails(filteredNewEmails))
         .thenReturn(expectedInsertedEmails);
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .post(requestPath + "/insert")
+            .post(prefixPath + "/insert")
             .param("bulk", "true")
             .contentType(MediaType.APPLICATION_JSON)
             .content(toJson(newEmails))
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(content().json(expectedEmailsJson, true));
+  }
+
+  private static Stream<Arguments> provideBulkInsertEmailParams() {
+    InsertEmailDto email1 = createExampleInsertEmail();
+    EmailDto email1Dto = createExampleEmail(42);
+    InsertEmailDto email2 = createExampleInsertEmail();
+    EmailDto email2Dto = createExampleEmail(24);
+
+    return Stream.of(
+        Arguments.of(Named.of("Null-free list", List.of(email1, email2)),
+            List.of(email1, email2),
+            List.of(email1Dto, email2Dto)),
+        Arguments.of(Named.of("Some null elements", asList(email1, null, email2)),
+            List.of(email1, email2),
+            List.of(email1Dto, email2Dto)),
+        Arguments.of(Named.of("All null elements", asList(null, null)),
+            emptyList(),
+            emptyList()),
+        Arguments.of(Named.of("No elements", emptyList()),
+            emptyList(),
+            emptyList())
+    );
   }
 
   @Test
@@ -111,7 +133,7 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .get(requestPath + "/query")
+            .get(prefixPath + "/query")
             .param("id", String.valueOf(id))
             .accept(MediaType.APPLICATION_JSON_VALUE))
         .andExpect(status().isOk())
@@ -128,7 +150,7 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .get(requestPath + "/query")
+            .get(prefixPath + "/query")
             .param("id", String.valueOf(id))
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
@@ -138,6 +160,7 @@ class EmailRestControllerTest {
   @MethodSource("provideBulkQueryParams")
   void shouldHandleBulkQueryEmailById(
       List<Long> searchedIds,
+      List<Long> filteredIds,
       List<EmailDto> expectedFoundEmails
   ) throws Exception {
     // Given
@@ -150,12 +173,12 @@ class EmailRestControllerTest {
     MultiValueMap<String, String> idParams = new LinkedMultiValueMap<>();
     idParams.addAll("ids", searchedIdsAsString);
 
-    when(emailStore.getEmails(searchedIds))
+    when(emailStore.getEmails(filteredIds))
         .thenReturn(expectedFoundEmails);
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .get(requestPath + "/query")
+            .get(prefixPath + "/query")
             .param("bulk", "true")
             .params(idParams)
             .accept(MediaType.APPLICATION_JSON))
@@ -167,14 +190,16 @@ class EmailRestControllerTest {
     EmailDto email1 = createExampleEmail(42);
     EmailDto email2 = createExampleEmail(12);
     EmailDto email3 = createExampleEmail(16);
-    List<Long> searchedIds = List.of(42L, 12L, 16L);
 
     return Stream.of(
-        Arguments.of(Named.of("All emails are found", searchedIds),
+        Arguments.of(Named.of("All emails are found", asList(42L, 12L, 16L)),
+            List.of(42L, 12L, 16L),
             List.of(email1, email3, email2)),
-        Arguments.of(Named.of("Some emails are found", searchedIds),
+        Arguments.of(Named.of("Some emails are found", asList(42L, 96L, 16L)),
+            List.of(42L, 96L, 16L),
             List.of(email1, email3)),
-        Arguments.of(Named.of("No emails are found", searchedIds),
+        Arguments.of(Named.of("No emails are found", asList(13L, 96L, 122L)),
+            List.of(13L, 96L, 122L),
             List.of())
     );
   }
@@ -187,7 +212,7 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .put(requestPath + "/update/" + id)
+            .put(prefixPath + "/update/" + id)
             .contentType(MediaType.APPLICATION_JSON)
             .content(toJson(updatedEmail)))
         .andExpect(status().isOk());
@@ -206,7 +231,7 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .put(requestPath + "/update/" + id)
+            .put(prefixPath + "/update/" + id)
             .contentType(MediaType.APPLICATION_JSON)
             .content(toJson(updatedEmail)))
         .andExpect(status().isBadRequest());
@@ -223,7 +248,7 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .put(requestPath + "/update/" + id)
+            .put(prefixPath + "/update/" + id)
             .contentType(MediaType.APPLICATION_JSON)
             .content(toJson(updatedEmail)))
         .andExpect(status().isNotFound());
@@ -236,7 +261,7 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .delete(requestPath + "/delete/" + id))
+            .delete(prefixPath + "/delete/" + id))
         .andExpect(status().isOk());
     // Verify call to store's deleteEmail(id).
     verify(emailStore).deleteEmail(id);
@@ -252,7 +277,7 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .delete(requestPath + "/delete/" + id))
+            .delete(prefixPath + "/delete/" + id))
         .andExpect(status().isNotFound());
   }
 
@@ -266,12 +291,37 @@ class EmailRestControllerTest {
 
     // When & Then
     mockMvc.perform(MockMvcRequestBuilders
-            .delete(requestPath + "/delete")
+            .delete(prefixPath + "/delete")
             .param("bulk", "true")
             .params(idParams))
         .andExpect(status().isOk());
     // Verify call to store's deleteEmails(ids).
     verify(emailStore).deleteEmails(ids);
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideMissingInputRequests")
+  void shouldHandleMissingInput(String requestPath, HttpMethod httpMethod) throws Exception {
+    // Given
+    // When & Then
+    mockMvc.perform(MockMvcRequestBuilders
+            .request(httpMethod, prefixPath + requestPath)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
+
+  private static Stream<Arguments> provideMissingInputRequests() {
+
+    return Stream.of(
+        Arguments.of("/insert", HttpMethod.POST),
+        Arguments.of("/insert?bulk", HttpMethod.POST),
+        Arguments.of("/query", HttpMethod.GET),
+        Arguments.of("/query?bulk", HttpMethod.GET),
+        Arguments.of("/update/0", HttpMethod.PUT),
+        Arguments.of("/delete", HttpMethod.DELETE),
+        Arguments.of("/delete?bulk", HttpMethod.DELETE)
+    );
   }
 
   /**
