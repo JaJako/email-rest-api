@@ -23,9 +23,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import static de.jjakobus.emailrestservice.EmailTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,6 +71,9 @@ class EmailRestServiceAppIT {
   @Autowired
   private EmailRepository emailRepository;
 
+  /** Example email stored in repository. */
+  private Email storedEmail;
+
   /** Base address for requests. */
   private String baseRequestAddress;
 
@@ -88,7 +89,7 @@ class EmailRestServiceAppIT {
 
     // Insert new test data.
     Email exampleEntity = createExampleEmailEntity(42);
-    emailRepository.save(exampleEntity);
+    storedEmail = emailRepository.save(exampleEntity);
   }
 
   /* Test CRUD endpoints exemplary. */
@@ -114,12 +115,10 @@ class EmailRestServiceAppIT {
         .as("Returned email should be present (not null).")
         .isNotNull()
         .as("Returned stored email should contain all information from inserted email.")
-        .matches(storedEmail -> containsAllInformationFromInsertDto(storedEmail, newEmail));
-    assertThat(emailRepository.findEmailById(returnedEmail.id()))
+        .matches(email -> containsAllInformationFromInsertDto(email, newEmail));
+    assertThat(emailRepository.existsById(returnedEmail.id()))
         .as("Inserted email should be present in store.")
-        .isPresent().get()
-        .as("Service-side mail should be equal to returned email.")
-        .returns(true, returnedEmail::equals);
+        .isTrue();
   }
 
   @Test
@@ -130,11 +129,12 @@ class EmailRestServiceAppIT {
     // When
     ResponseEntity<List<EmailDto>> response =
         restTemplate.exchange(
-            baseRequestAddress + "/insert",
+            baseRequestAddress + "/insert?bulk",
             HttpMethod.POST,
             new HttpEntity<>(newEmails),
             new ParameterizedTypeReference<>() {
             });
+
     List<EmailDto> returnedEmails = response.getBody();
 
     // Then
@@ -145,26 +145,23 @@ class EmailRestServiceAppIT {
         .as("Returned emails should be present (not null) and be no empty list.")
         .isNotNull().isNotEmpty()
         .as("Returned stored email should contain all information from inserted email.")
-        .allMatch(storedEmail -> containsAllInformationFromInsertDto(storedEmail, newEmails.get(0)))
-        .as("Service-side mails should be equal to returned emails.")
-        .allMatch(email ->
-            emailRepository.findEmailById(email.id())
-                .filter(email::equals)
-                .isPresent());
+        .allMatch(email -> containsAllInformationFromInsertDto(email, newEmails.get(0)))
+        .as("Service-side mails should be present.")
+        .allMatch(email -> emailRepository.existsById(email.id()));
   }
 
   @Test
   void shouldQueryMail() {
     // Given
-    EmailDto storedEmail = createExampleEmail(42);
-    long emailId = storedEmail.id(); // Use ID of stored email to run query.
+    long emailId = storedEmail.getId(); // Use ID of stored email to run query.
+    EmailDto expectedEmail = storedEmail.toDto();
 
     // When
     ResponseEntity<EmailDto> response =
         restTemplate.getForEntity(
-            baseRequestAddress + "/query",
+            baseRequestAddress + "/query?id={id}",
             EmailDto.class,
-            Map.of("id", emailId)); // Send ID via URL param.
+            emailId); // Send ID via URL param.
 
     // Then
     assertThat(response.getStatusCode())
@@ -172,13 +169,13 @@ class EmailRestServiceAppIT {
         .isEqualTo(HttpStatus.OK);
     assertThat(response.getBody())
         .as("Returned email should be equal to expected email.")
-        .isEqualTo(storedEmail);
+        .isEqualTo(expectedEmail);
   }
 
   @Test
   void shouldUpdateMail() {
     // Given
-    EmailDto draftEmail = createExampleEmail(42);
+    EmailDto draftEmail = storedEmail.toDto();
     long emailId = draftEmail.id(); // Use ID of stored email to update.
     EmailDto updatedEmail =
         new EmailDto(
@@ -189,49 +186,51 @@ class EmailRestServiceAppIT {
             draftEmail.cc(),
             "Changed subject",
             "new body content",
-            new Date());
+            draftEmail.modifiedDate());
 
     // When
     ResponseEntity<String> response =
         restTemplate.exchange(
-            baseRequestAddress + "/update/" + emailId,
+            baseRequestAddress + "/update/{id}",
             HttpMethod.PUT,
             new HttpEntity<>(updatedEmail),
-            String.class); // There will be no response value, but type is needed anyway, so use String.
+            String.class, // There will be no response value, but type is needed anyway, so use String.
+            emailId);
 
     // Then
     assertThat(response.getStatusCode())
         .as("HTTP status should be 200 (ok).")
         .isEqualTo(HttpStatus.OK);
-    assertThat(emailRepository.findEmailById(updatedEmail.id()))
+    assertThat(emailRepository.findById(updatedEmail.id()))
         .as("Updated email should be present.")
         .isPresent().get()
-        .as("Service-side mail should be equal to local updated email.")
-        .returns(true, updatedEmail::equals);
+        .as("Service-side mail should contain updated subject and body.")
+        .returns("Changed subject", Email::getSubject)
+        .returns("new body content", Email::getBody);
   }
 
   @Test
   void shouldDeleteMail() {
     // Given
-    EmailDto storedEmail = createExampleEmail(42);
-    long emailId = storedEmail.id(); // Use ID of stored email to delete.
+    long emailId = storedEmail.getId(); // Use ID of stored email to delete.
 
     // When
     ResponseEntity<String> response =
         restTemplate.exchange(
-            baseRequestAddress + "/delete/" + emailId,
+            baseRequestAddress + "/delete/{id}",
             HttpMethod.DELETE,
             new HttpEntity<>(null, null), // Empty request entity/body.
-            String.class); // There will be no response value, but type is needed anyway, so use String.
+            String.class, // There will be no response value, but type is needed anyway, so use String.
+            emailId);
 
     // Then
     assertThat(response.getStatusCode())
         .as("HTTP status should be 200 (ok).")
         .isEqualTo(HttpStatus.OK);
-    assertThat(emailRepository.findEmailById(emailId))
+    assertThat(emailRepository.findById(emailId))
         .as("Service should still contain a mail with given ID.")
         .isPresent().get()
         .as("State of mail should be \"DELETED\".")
-        .returns(EmailState.DELETED, EmailDto::state);
+        .returns(EmailState.DELETED, Email::getState);
   }
 }

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Handles all store-related operations regarding emails.
@@ -164,6 +165,7 @@ public class EmailStoreService {
    * @throws EmailNotFoundException no email with given id
    * @throws EmailUpdateNotAllowedException given email must not be updated
    */
+  @SuppressWarnings("java:S6204") // toList() cannot be used because entities need a mutable list!
   public void updateEmail(
       long id,
       EmailDto updatedEmail
@@ -183,11 +185,11 @@ public class EmailStoreService {
     emailEntity.setTo(
         updatedEmail.to().stream()
             .map(EmailStoreService::createEmailAddressEntityFrom)
-            .toList());
+            .collect(toList()));
     emailEntity.setCc(
         updatedEmail.cc().stream()
             .map(EmailStoreService::createEmailAddressEntityFrom)
-            .toList());
+            .collect(toList()));
     emailEntity.setSubject(updatedEmail.subject());
     emailEntity.setBody(updatedEmail.body());
     emailEntity.setModifiedDate(updatedEmail.modifiedDate());
