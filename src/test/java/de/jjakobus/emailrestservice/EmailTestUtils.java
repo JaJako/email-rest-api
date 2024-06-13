@@ -1,5 +1,7 @@
 package de.jjakobus.emailrestservice;
 
+import de.jjakobus.emailrestservice.model.Email;
+import de.jjakobus.emailrestservice.model.EmailAddress;
 import de.jjakobus.emailrestservice.model.EmailState;
 import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
@@ -41,7 +43,8 @@ public class EmailTestUtils {
   }
 
   /**
-   * Creates example {@link InsertEmailDto} that matches {@link #createExampleEmail(int)} example information-wise.
+   * Creates example {@link InsertEmailDto} that matches {@link #createExampleEmailEntity(long)} and
+   * {@link #createExampleEmail(long)} example information-wise.
    *
    * @return example insert email
    */
@@ -60,12 +63,38 @@ public class EmailTestUtils {
   }
 
   /**
-   * Creates example {@link EmailDto} that matches {@link #createExampleInsertEmail()} example information-wise.
+   * Creates example {@link Email} entity that matches {@link #createExampleInsertEmail()} and
+   * {@link #createExampleEmail(long)} example information-wise.
+   *
+   * @param id id to use
+   * @return example email entity
+   */
+  public static Email createExampleEmailEntity(long id) {
+
+    Email email = new Email(
+        EmailState.DRAFT,
+        new EmailAddress("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>"),
+        List.of(
+            new EmailAddress("juergen.vogel@web.de", null),
+            new EmailAddress("hans-peter@gmail.com", "Hans Peter")),
+        List.of(new EmailAddress("peter.lustig@gmail.com", "Peter Lustig")),
+        "Löwenzahn",
+        "Planung neuer Sendung",
+        new Date(42));
+    // Override generated id.
+    email.setId(id);
+
+    return email;
+  }
+
+  /**
+   * Creates example {@link EmailDto} that matches {@link #createExampleInsertEmail()} and
+   * {@link #createExampleEmailEntity(long)} example information-wise.
    *
    * @param id id of email
    * @return example email
    */
-  public static EmailDto createExampleEmail(int id) {
+  public static EmailDto createExampleEmail(long id) {
 
     return new EmailDto(
         id,

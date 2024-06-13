@@ -25,7 +25,11 @@ spring:
     # Disable warning about enabled db queries during view rendering.
     # There is no view in this application, so no problem with it.
     open-in-view: true
-
+    # Further hibernate-specific properties.
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 5
 
 # Configuration of web server.
 server:

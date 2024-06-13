@@ -188,17 +188,19 @@ public class Email {
       return false;
     }
     Email email = (Email) o;
-    return state == email.state
+    return id == email.id
+        && state == email.state
         && Objects.equals(from, email.from)
         && Objects.equals(to, email.to)
         && Objects.equals(cc, email.cc)
+        && Objects.equals(subject, email.subject)
         && Objects.equals(body, email.body)
         && Objects.equals(modifiedDate, email.modifiedDate);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(state, from, to, cc, body, modifiedDate);
+    return Objects.hash(id, state, from, to, cc, subject, body, modifiedDate);
   }
 
   @Override
@@ -209,6 +211,7 @@ public class Email {
         ", from=" + from +
         ", to=" + to +
         ", cc=" + cc +
+        ", subject='" + subject + '\'' +
         ", body='" + body + '\'' +
         ", modifiedDate=" + modifiedDate +
         '}';

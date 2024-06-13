@@ -1,9 +1,7 @@
 package de.jjakobus.emailrestservice;
 
 import de.jjakobus.emailrestservice.model.Email;
-import de.jjakobus.emailrestservice.model.EmailAddress;
 import de.jjakobus.emailrestservice.model.EmailState;
-import de.jjakobus.emailrestservice.model.dtos.EmailAddressDto;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
 import de.jjakobus.emailrestservice.service.repositories.EmailRepository;
@@ -29,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static de.jjakobus.emailrestservice.EmailTestUtils.containsAllInformationFromInsertDto;
+import static de.jjakobus.emailrestservice.EmailTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -89,16 +87,7 @@ class EmailRestServiceAppIT {
     emailRepository.deleteAll();
 
     // Insert new test data.
-    EmailAddress addressEntity = new EmailAddress("sample.address@domain.de", "Sample Address");
-    EmailAddress addressEntity2 = new EmailAddress("peter.mueller@gmx.de", null);
-    Email exampleEntity = new Email(
-        EmailState.DRAFT,
-        addressEntity,
-        List.of(addressEntity2),
-        List.of(),
-        "Sample subject",
-        "Sample body content.",
-        new Date());
+    Email exampleEntity = createExampleEmailEntity(42);
     emailRepository.save(exampleEntity);
   }
 
@@ -107,7 +96,7 @@ class EmailRestServiceAppIT {
   @Test
   void shouldInsertMail() {
     // Given
-    InsertEmailDto newEmail = getNewEmail();
+    InsertEmailDto newEmail = createExampleInsertEmail();
 
     // When
     ResponseEntity<EmailDto> response =
@@ -136,7 +125,7 @@ class EmailRestServiceAppIT {
   @Test
   void shouldInsertMultipleMails() {
     // Given
-    List<InsertEmailDto> newEmails = List.of(getNewEmail(), getNewEmail());
+    List<InsertEmailDto> newEmails = List.of(createExampleInsertEmail(), createExampleInsertEmail());
 
     // When
     ResponseEntity<List<EmailDto>> response =
@@ -167,7 +156,7 @@ class EmailRestServiceAppIT {
   @Test
   void shouldQueryMail() {
     // Given
-    EmailDto storedEmail = getStoredDraftEmail();
+    EmailDto storedEmail = createExampleEmail(42);
     long emailId = storedEmail.id(); // Use ID of stored email to run query.
 
     // When
@@ -189,7 +178,7 @@ class EmailRestServiceAppIT {
   @Test
   void shouldUpdateMail() {
     // Given
-    EmailDto draftEmail = getStoredDraftEmail();
+    EmailDto draftEmail = createExampleEmail(42);
     long emailId = draftEmail.id(); // Use ID of stored email to update.
     EmailDto updatedEmail =
         new EmailDto(
@@ -224,7 +213,7 @@ class EmailRestServiceAppIT {
   @Test
   void shouldDeleteMail() {
     // Given
-    EmailDto storedEmail = getStoredDraftEmail();
+    EmailDto storedEmail = createExampleEmail(42);
     long emailId = storedEmail.id(); // Use ID of stored email to delete.
 
     // When
@@ -244,45 +233,5 @@ class EmailRestServiceAppIT {
         .isPresent().get()
         .as("State of mail should be \"DELETED\".")
         .returns(EmailState.DELETED, EmailDto::state);
-  }
-
-  /**
-   * Returns a draft email that is stored in database.
-   *
-   * @return stored draft email
-   */
-  private static EmailDto getStoredDraftEmail() {
-
-    return new EmailDto(
-        42,
-        EmailState.DRAFT,
-        new EmailAddressDto("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>"),
-        List.of(
-            new EmailAddressDto("juergen.vogel@web.de", null),
-            new EmailAddressDto("hans-peter@gmail.com", "Hans Peter")),
-        List.of(),
-        "Draft subject",
-        "Hello,\n\nGoodbye!",
-        new Date()
-    );
-  }
-
-  /**
-   * Returns a new email that is not stored in database yet.
-   *
-   * @return new email
-   */
-  private static InsertEmailDto getNewEmail() {
-
-    return new InsertEmailDto(
-        EmailState.DRAFT,
-        new EmailAddressDto("juergen.vogel@web.de", null),
-        List.of(
-            new EmailAddressDto("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>")),
-        List.of(),
-        "Very important, please respond!",
-        "Forgot what I want to tell you.",
-        new Date()
-    );
   }
 }
