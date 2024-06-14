@@ -70,9 +70,21 @@ public class EmailTestUtils {
    * @return example email entity
    */
   public static Email createExampleEmailEntity(long id) {
+    return createExampleEmailEntity(id, EmailState.DRAFT);
+  }
+
+  /**
+   * Creates example {@link Email} entity that matches {@link #createExampleInsertEmail()} and
+   * {@link #createExampleEmail(long)} example information-wise.
+   *
+   * @param id id to use
+   * @param state state of email
+   * @return example email entity
+   */
+  public static Email createExampleEmailEntity(long id, EmailState state) {
 
     Email email = new Email(
-        EmailState.DRAFT,
+        state,
         new EmailAddress("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>"),
         List.of(
             new EmailAddress("juergen.vogel@web.de", null),
@@ -81,7 +93,32 @@ public class EmailTestUtils {
         "Löwenzahn",
         "Planung neuer Sendung",
         new Date(42));
-    // Override generated id.
+    // Override id with given one.
+    email.setId(id);
+
+    return email;
+  }
+
+  /**
+   * Creates example updated {@link Email} which does not match the other example information-wise.
+   *
+   * @param id id of email
+   * @param state state of email
+   * @return example email
+   */
+  public static Email createUpdatedEmailOfState(long id, EmailState state) {
+
+    Email email = new Email(
+        state,
+        new EmailAddress("juergen.vogel@web.de", null),
+        List.of(
+            new EmailAddress("peter.lustig@gmail.com", "Peter Lustig"),
+            new EmailAddress("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>")),
+        List.of(),
+        "Löwenzahn-NEU",
+        "Planung neuer Sendung, updated.",
+        new Date(76));
+    // Override id with given one.
     email.setId(id);
 
     return email;

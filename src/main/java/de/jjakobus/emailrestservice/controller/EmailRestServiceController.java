@@ -1,9 +1,11 @@
 package de.jjakobus.emailrestservice.controller;
 
+import de.jjakobus.emailrestservice.model.EmailAddress;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
 import de.jjakobus.emailrestservice.model.exceptions.EmailNotFoundException;
 import de.jjakobus.emailrestservice.model.exceptions.EmailUpdateNotAllowedException;
+import de.jjakobus.emailrestservice.service.EmailSpamFilterService;
 import de.jjakobus.emailrestservice.service.EmailStoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,8 +35,14 @@ public class EmailRestServiceController {
    * @param emailStore service managing emails store
    */
   @Autowired
-  public EmailRestServiceController(EmailStoreService emailStore) {
+  public EmailRestServiceController(
+      EmailStoreService emailStore,
+      EmailSpamFilterService spamService) {
     this.emailStore = requireNonNull(emailStore, "emailStore must not be null.");
+
+    // For now, simply add "carl@gbtec.com" to spam service as single filter.
+    EmailAddress carlEmailAddress = new EmailAddress("carl@gbtec.com", null);
+    spamService.addFilterAddress(carlEmailAddress);
   }
 
   /**

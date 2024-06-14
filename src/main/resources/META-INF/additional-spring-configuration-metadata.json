@@ -4,6 +4,11 @@
       "name": "email-rest-service.request-path",
       "type": "java.lang.String",
       "description": "(Prefix) path for requests dealing with emails."
+    },
+    {
+      "name": "email-rest-service.spam-filter-cron",
+      "type": "java.lang.String",
+      "description": "CRON expression to schedule SPAM filter task."
     }
   ]
 }
