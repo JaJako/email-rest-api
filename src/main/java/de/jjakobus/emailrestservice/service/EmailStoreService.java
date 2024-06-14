@@ -9,6 +9,8 @@ import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
 import de.jjakobus.emailrestservice.model.exceptions.EmailNotFoundException;
 import de.jjakobus.emailrestservice.model.exceptions.EmailUpdateNotAllowedException;
 import de.jjakobus.emailrestservice.service.repositories.EmailRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,20 @@ import static java.util.stream.Collectors.toList;
  */
 @Service
 public class EmailStoreService {
+
+  /* Logger messages. */
+  private static final String MSG_SAVED_NEW_EMAIL = "Saved new email with id {} from insert description: {}.";
+  private static final String MSG_SAVED_NEW_EMAILS = "Saved {}/{} new emails with ids {} from insert descriptions: {}.";
+  private static final String MSG_FOUND_MATCHING_EMAILS = "Found {} of searched {} emails with ids {}. ";
+  private static final String MSG_FOUND_EMAIL_TO_UPDATE = "Found email to update with id {}.";
+  private static final String MSG_UPDATE_IS_ALLOWED = "Successfully checked email update is allowed.";
+  private static final String MSG_SAVED_UPDATED_EMAIL = "Saved updated email of id {}: {}";
+  private static final String MSG_FOUND_EMAIL_TO_DELETE = "Found email to delete with id {}.";
+  private static final String MSG_DELETED_EMAIL = "Marked email with id {} as DELETED.";
+  private static final String MSG_DELETED_EMAILS = "Marked {}/{} email of ids {} as DELETED.";
+  
+  /** Logger of service. */
+  private final Logger logger = LoggerFactory.getLogger(EmailStoreService.class);
 
   /* Exception messages. */
   private static final String MSG_NO_EMAIL_WITH_ID = "There is no email with id '%s'.";
@@ -55,6 +71,9 @@ public class EmailStoreService {
 
     Email newEmailEntity = createEmailEntityFromNewEmail(newEmail);
     Email insertedEmailEntity = emailRepository.save(newEmailEntity);
+
+    logger.debug(MSG_SAVED_NEW_EMAIL, insertedEmailEntity.getId(), insertedEmailEntity);
+
     return insertedEmailEntity.toDto();
   }
 
@@ -109,8 +128,11 @@ public class EmailStoreService {
         .map(EmailStoreService::createEmailEntityFromNewEmail)
         .toList();
     Iterable<Email> insertedEmailEntities = emailRepository.saveAll(newEmailEntities);
+    List<EmailDto> insertedEmailDtos = emailEntitiesToDtos(insertedEmailEntities);
 
-    return emailEntitiesToDtos(insertedEmailEntities);
+    logger.debug(MSG_SAVED_NEW_EMAILS, insertedEmailDtos.size(), newEmails.size(),
+        newEmailEntities.stream().map(Email::getId).toList(), insertedEmailEntities);
+    return insertedEmailDtos;
   }
 
   /**
@@ -152,7 +174,10 @@ public class EmailStoreService {
     requireNonNull(ids, "ids must not be null.");
 
     Iterable<Email> matchedEmailEntities = emailRepository.findAllById(ids);
-    return emailEntitiesToDtos(matchedEmailEntities);
+    List<EmailDto> matchedEmailDtos = emailEntitiesToDtos(matchedEmailEntities);
+
+    logger.debug(MSG_FOUND_MATCHING_EMAILS, matchedEmailDtos.size(), ids.size(), ids);
+    return matchedEmailDtos;
   }
 
   /**
@@ -176,8 +201,11 @@ public class EmailStoreService {
         .orElseThrow(() -> new EmailNotFoundException(
             String.format(MSG_NO_EMAIL_WITH_ID, id)));
 
+    logger.debug(MSG_FOUND_EMAIL_TO_UPDATE, id);
+
     // Check update is allowed (throws exception if not).
     checkUpdateAllowed(emailEntity, updatedEmail);
+    logger.debug(MSG_UPDATE_IS_ALLOWED);
 
     emailEntity.setState(updatedEmail.state());
     emailEntity.setFrom(
@@ -196,6 +224,7 @@ public class EmailStoreService {
 
     // Save = update entity.
     emailRepository.save(emailEntity);
+    logger.debug(MSG_SAVED_UPDATED_EMAIL, emailEntity.getId(), emailEntity);
   }
 
   /**
@@ -296,11 +325,14 @@ public class EmailStoreService {
         .orElseThrow(() -> new EmailNotFoundException(
             String.format(MSG_NO_EMAIL_WITH_ID, id)));
 
+    logger.debug(MSG_FOUND_EMAIL_TO_DELETE, emailToDelete.getId());
+
     // Set state to 'DELETED'.
     emailToDelete.setState(EmailState.DELETED);
 
     // Save = update email.
     emailRepository.save(emailToDelete);
+    logger.debug(MSG_DELETED_EMAIL, emailToDelete.getId());
   }
 
   /**
@@ -311,13 +343,16 @@ public class EmailStoreService {
   public void deleteEmails(List<Long> ids) {
     requireNonNull(ids, "ids must not be null.");
 
+    int deletedEmailsCount = 0;
     Iterable<Email> emailsToDelete = emailRepository.findAllById(ids);
     for (Email emailToDelete : emailsToDelete) {
       // Set state to 'DELETED'.
       emailToDelete.setState(EmailState.DELETED);
+      deletedEmailsCount++;
     }
 
     // Save = update email.
     emailRepository.saveAll(emailsToDelete);
+    logger.debug(MSG_DELETED_EMAILS, deletedEmailsCount, ids.size(), ids);
   }
 }

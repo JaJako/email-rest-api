@@ -4,6 +4,8 @@ import de.jjakobus.emailrestservice.model.Email;
 import de.jjakobus.emailrestservice.model.EmailAddress;
 import de.jjakobus.emailrestservice.model.EmailState;
 import de.jjakobus.emailrestservice.service.repositories.EmailRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,15 @@ import static java.util.Objects.requireNonNull;
  */
 @Service
 public class EmailSpamFilterService {
+
+  /* Logger messages. */
+  private static final String MSG_RUNNING_SPAM_CLASSIFICATION =
+      "Running scheduled SPAM classification task with filter email addresses: {}.";
+  private static final String MSG_SUCCESSFULLY_CLASSIFIED_MAILS = "Classified {} mails as SPAM.";
+  private static final String MSG_ADDED_SPAM_FILTER = "Added new filter address: {}.";
+
+  /** Logger of service. */
+  private final Logger logger = LoggerFactory.getLogger(EmailSpamFilterService.class);
 
   /** Repository of emails. */
   private final EmailRepository emailRepository;
@@ -46,6 +57,8 @@ public class EmailSpamFilterService {
    */
   @Scheduled(cron = "${email-rest-service.spam-filter-cron}")
   public void classifySpamEmails() {
+    logger.info(MSG_RUNNING_SPAM_CLASSIFICATION, filteredEmails);
+
     // Go through filters (email addresses).
     List<Email> filteredSpamEmails = filteredEmails.stream()
         .map(EmailAddress::getAddress)
@@ -61,6 +74,8 @@ public class EmailSpamFilterService {
 
     // Save = update spam emails.
     emailRepository.saveAll(filteredSpamEmails);
+
+    logger.info(MSG_SUCCESSFULLY_CLASSIFIED_MAILS, filteredSpamEmails.size());
   }
 
   /**
@@ -70,5 +85,6 @@ public class EmailSpamFilterService {
    */
   public void addFilterAddress(EmailAddress emailAddress) {
     filteredEmails.add(emailAddress);
+    logger.debug(MSG_ADDED_SPAM_FILTER, emailAddress);
   }
 }

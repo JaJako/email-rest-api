@@ -98,9 +98,8 @@ public class EmailAddress {
 
   @Override
   public String toString() {
-    return "EmailAddress{" +
-        "address='" + address + '\'' +
-        ", displayName='" + displayName + '\'' +
-        '}';
+    return displayName != null
+        ? displayName
+        : address;
   }
 }

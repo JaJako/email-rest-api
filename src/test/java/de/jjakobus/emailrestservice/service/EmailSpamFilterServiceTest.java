@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
  * @author jjakobus
  */
 @ExtendWith(MockitoExtension.class)
-class EmailSpamFilterTaskTest {
+class EmailSpamFilterServiceTest {
 
   @Mock
   private EmailRepository emailRepository;
