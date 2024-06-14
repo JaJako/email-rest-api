@@ -32,6 +32,9 @@ spring:
       hibernate:
         jdbc:
           batch_size: 5
+  # Enable/disable liquibase.
+  liquibase:
+    enabled: true
 
 # Configuration of web server.
 server:

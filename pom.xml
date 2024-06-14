@@ -69,7 +69,7 @@
             <version>${springboot.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- Running integration test with PostgreSQL database. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -98,6 +98,20 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
+            </plugin>
+
+            <!-- Plugin for generating liquibase xml. -->
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <version>4.27.0</version>
+                <configuration>
+                    <driver>org.postgresql.Driver</driver>
+                    <url>jdbc:postgresql://localhost:5432/emails</url>
+                    <username>email-service-user</username>
+                    <password>fun-email-server</password>
+                    <outputChangeLogFile>src/main/resources/config/liquidbase/changelog.xml</outputChangeLogFile>
+                </configuration>
             </plugin>
         </plugins>
     </build>
