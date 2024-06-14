@@ -2,7 +2,7 @@
 email-rest-service:
   # Path (prefix) for requests.
   request-path: "/emails"
-  # CRON expression for SPAM filter scheduling (everyday at 10:00).
+  # CRON expression for SPAM filter scheduling (every day at 10:00).
   spam-filter-cron: "0 0 10 * * ?"
 
 # Spring Boot configuration.

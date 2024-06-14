@@ -296,7 +296,7 @@ public class EmailStoreService {
         .orElseThrow(() -> new EmailNotFoundException(
             String.format(MSG_NO_EMAIL_WITH_ID, id)));
 
-    // Set state to DELETED.
+    // Set state to 'DELETED'.
     emailToDelete.setState(EmailState.DELETED);
 
     // Save = update email.
@@ -313,7 +313,7 @@ public class EmailStoreService {
 
     Iterable<Email> emailsToDelete = emailRepository.findAllById(ids);
     for (Email emailToDelete : emailsToDelete) {
-      // Set state to DELETED.
+      // Set state to 'DELETED'.
       emailToDelete.setState(EmailState.DELETED);
     }
 

@@ -54,12 +54,6 @@
             <artifactId>spring-boot-starter-validation</artifactId>
             <version>${springboot.version}</version>
         </dependency>
-        <!-- Support for using Docker compose. -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-docker-compose</artifactId>
-            <optional>true</optional>
-        </dependency>
         <!-- Driver to use PostgreSQL with Spring Boot JPA. -->
         <dependency>
             <groupId>org.postgresql</groupId>

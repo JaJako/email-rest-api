@@ -2,10 +2,27 @@ name: email-rest-service
 
 services:
 
+  app:
+    image: 'jjakobus/email-rest-service:latest'
+    build:
+      context: .
+    container_name: app
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres-db
+    environment:
+      # Override url of application.yml to directly access container and not using "localhost".
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/emails
+      # Override further settings only when different to application.yml.
+      #- SPRING_DATASOURCE_USERNAME=email-service-user
+      #- SPRING_DATASOURCE_PASSWORD=fun-email-server
+      #- SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
   postgres-db:
     image: 'postgres:16.3-alpine'
     container_name: "postgres"
-    # Redirect port to be accessible.
+    # Redirect port - needed for development and local non-docker launch of application.
     ports:
       - "5432:5432"
     # Bind mound to hidden directory in project.
