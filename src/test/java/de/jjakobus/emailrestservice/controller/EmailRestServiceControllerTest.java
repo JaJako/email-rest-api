@@ -7,6 +7,7 @@ import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
 import de.jjakobus.emailrestservice.model.exceptions.EmailNotFoundException;
 import de.jjakobus.emailrestservice.model.exceptions.EmailUpdateNotAllowedException;
+import de.jjakobus.emailrestservice.service.EmailSpamFilterService;
 import de.jjakobus.emailrestservice.service.EmailStoreService;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,11 @@ class EmailRestServiceControllerTest {
   /** Mock of email store service. */
   @MockBean
   private EmailStoreService emailStore;
+
+  /** Mock of email spam filter service. */
+  @MockBean
+  @SuppressWarnings("unused") // Service needs to exist for controller to be created.
+  private EmailSpamFilterService emailSpamFilterService;
 
   @Autowired
   private MockMvc mockMvc;
