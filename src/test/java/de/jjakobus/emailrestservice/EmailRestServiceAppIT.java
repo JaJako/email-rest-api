@@ -82,8 +82,9 @@ class EmailRestServiceAppIT {
   @Autowired
   private EmailRepository emailRepository;
 
-  /** Example email stored in repository. */
-  private Email storedEmail;
+  /** Example emails stored in repository. */
+  private Email storedEmail1;
+  private Email storedEmail2;
 
   /** Base address for requests. */
   private String baseRequestAddress;
@@ -99,8 +100,10 @@ class EmailRestServiceAppIT {
     emailRepository.deleteAll();
 
     // Insert new test data.
-    Email exampleEntity = createExampleEmailEntity(42);
-    storedEmail = emailRepository.save(exampleEntity);
+    Email exampleEntity1 = createExampleEmailEntity(42);
+    storedEmail1 = emailRepository.save(exampleEntity1);
+    Email exampleEntity2 = createExampleEmailEntity(43);
+    storedEmail2 = emailRepository.save(exampleEntity2);
   }
 
   @Test
@@ -163,7 +166,7 @@ class EmailRestServiceAppIT {
   }
 
   @Test
-  void shouldInsertMultipleMails() {
+  void shouldInsertMailsBulk() {
     // Given
     List<InsertEmailDto> newEmails = List.of(createExampleInsertEmail(), createExampleInsertEmail());
 
@@ -194,8 +197,8 @@ class EmailRestServiceAppIT {
   @Test
   void shouldQueryMail() {
     // Given
-    long emailId = storedEmail.getId(); // Use ID of stored email to run query.
-    EmailDto expectedEmail = storedEmail.toDto();
+    long emailId = storedEmail1.getId(); // Use ID of stored email to run query.
+    EmailDto expectedEmail = storedEmail1.toDto();
 
     // When
     ResponseEntity<EmailDto> response =
@@ -214,9 +217,42 @@ class EmailRestServiceAppIT {
   }
 
   @Test
+  void shouldQueryMailsBulk() {
+    // Given
+    long emailId1 = storedEmail1.getId(); // Use ID of stored email to run query.
+    long emailId2 = storedEmail2.getId(); // Use ID of stored email to run query.
+    long unknownId = 101;
+    EmailDto expectedEmail1 = storedEmail1.toDto();
+    EmailDto expectedEmail2 = storedEmail2.toDto();
+
+    // When
+    String idsParam = emailId1 + "," + emailId2 + "," + unknownId;
+    ResponseEntity<List<EmailDto>> response =
+        restTemplate.exchange(
+            baseRequestAddress + "/query?bulk&ids={ids}",
+            HttpMethod.GET,
+            new HttpEntity<>(null, null), // Empty request entity/body.
+            new ParameterizedTypeReference<>() {
+            },
+            idsParam);
+
+    List<EmailDto> matchedEmails = response.getBody();
+
+    // Then
+    assertThat(response.getStatusCode())
+        .as("HTTP status should be 200 (ok).")
+        .isEqualTo(HttpStatus.OK);
+    assertThat(matchedEmails)
+        .as("Matched emails should be present (not null) and be no empty list.")
+        .isNotNull().isNotEmpty()
+        .as("Expected matched emails should be present.")
+        .containsExactlyInAnyOrder(expectedEmail1, expectedEmail2);
+  }
+
+  @Test
   void shouldUpdateMail() {
     // Given
-    EmailDto draftEmail = storedEmail.toDto();
+    EmailDto draftEmail = storedEmail1.toDto();
     long emailId = draftEmail.id(); // Use ID of stored email to update.
     EmailDto updatedEmail =
         new EmailDto(
@@ -253,7 +289,7 @@ class EmailRestServiceAppIT {
   @Test
   void shouldDeleteMail() {
     // Given
-    long emailId = storedEmail.getId(); // Use ID of stored email to delete.
+    long emailId = storedEmail1.getId(); // Use ID of stored email to delete.
 
     // When
     ResponseEntity<String> response =
@@ -273,5 +309,34 @@ class EmailRestServiceAppIT {
         .isPresent().get()
         .as("State of mail should be \"DELETED\".")
         .returns(EmailState.DELETED, Email::getState);
+  }
+
+  @Test
+  void shouldDeleteMailsBulk() {
+    // Given
+    long emailId1 = storedEmail1.getId(); // Use ID of stored email to run query.
+    long emailId2 = storedEmail2.getId(); // Use ID of stored email to run query.
+    long unknownId = 101;
+    List<Long> ids = List.of(emailId1, unknownId, emailId2);
+
+    // When
+    String idsParam = emailId1 + "," + unknownId + "," + emailId2;
+    ResponseEntity<String> response =
+        restTemplate.exchange(
+            baseRequestAddress + "/delete?bulk&ids={ids}",
+            HttpMethod.DELETE,
+            new HttpEntity<>(null, null), // Empty request entity/body.
+            String.class,
+            idsParam);
+
+    // Then
+    assertThat(response.getStatusCode())
+        .as("HTTP status should be 200 (ok).")
+        .isEqualTo(HttpStatus.OK);
+    assertThat(emailRepository.findAllById(ids))
+        .as("Service should still contain the mails with given IDs.")
+        .hasSize(2)
+        .as("State of mails should be \"DELETED\".")
+        .allMatch(email -> email.getState() == EmailState.DELETED);
   }
 }
