@@ -5,6 +5,7 @@
     * [a) Docker](#a-docker)
     * [b) local (containerized postgres)](#b-local-containerized-postgres)
     * [c) local (no docker)](#c-local-no-docker)
+  * [Update database schema](#update-database-schema)
   * [Design Process](#design-process)
     * [Tech-Stack / Libraries](#tech-stack--libraries)
     * [Architecture](#architecture)
@@ -68,6 +69,15 @@ Package with maven and launch application:
 ```shell
 ./mvnw package -DskipTests \
   && java -jar ./target/email-rest-service-0.0.1-SNAPSHOT.jar
+```
+
+## Update database schema
+
+In case of an update to the database schema / entities design, liquibase is used to generate and apply migration
+scripts. To generate a new "changelog" run:
+
+```shell
+./mvnw liquibase:generateChangeLog
 ```
 
 ---

@@ -110,7 +110,7 @@
                     <url>jdbc:postgresql://localhost:5432/emails</url>
                     <username>email-service-user</username>
                     <password>fun-email-server</password>
-                    <outputChangeLogFile>src/main/resources/config/liquidbase/changelog.xml</outputChangeLogFile>
+                    <outputChangeLogFile>src/main/resources/config/liquibase/master.xml</outputChangeLogFile>
                 </configuration>
             </plugin>
         </plugins>

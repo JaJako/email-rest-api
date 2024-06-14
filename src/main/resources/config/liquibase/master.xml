@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet author="Studium (generated)" id="1718358641181-1">
+    <changeSet author="Studium (generated)" id="1718359584106-1">
         <createTable tableName="email">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="email_pkey"/>
@@ -21,10 +21,10 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="Studium (generated)" id="1718358641181-2">
+    <changeSet author="Studium (generated)" id="1718359584106-2">
         <createSequence cacheSize="1" cycle="false" dataType="bigint" incrementBy="50" maxValue="9223372036854775807" minValue="1" sequenceName="email_seq" startValue="1"/>
     </changeSet>
-    <changeSet author="Studium (generated)" id="1718358641181-3">
+    <changeSet author="Studium (generated)" id="1718359584106-3">
         <createTable tableName="email_cc">
             <column name="email_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -33,7 +33,7 @@
             <column name="display_name" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="Studium (generated)" id="1718358641181-4">
+    <changeSet author="Studium (generated)" id="1718359584106-4">
         <createTable tableName="email_to">
             <column name="email_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -42,10 +42,10 @@
             <column name="display_name" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="Studium (generated)" id="1718358641181-5">
+    <changeSet author="Studium (generated)" id="1718359584106-5">
         <addForeignKeyConstraint baseColumnNames="email_id" baseTableName="email_to" constraintName="fk64epad6w12obj2rwl0q10wx2g" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="email" validate="true"/>
     </changeSet>
-    <changeSet author="Studium (generated)" id="1718358641181-6">
+    <changeSet author="Studium (generated)" id="1718359584106-6">
         <addForeignKeyConstraint baseColumnNames="email_id" baseTableName="email_cc" constraintName="fkqvtommri700u1m4uva4nmw45w" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="email" validate="true"/>
     </changeSet>
 </databaseChangeLog>
