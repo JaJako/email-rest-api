@@ -62,9 +62,10 @@ There are two
 services: [EmailStoreService.java](src/main/java/de/jjakobus/emailrestservice/service/EmailStoreService.java) as a
 layer between the JPA email repository and the controller which implements all custom logic like conditions when an
 email is allowed to be updated. This way controller does not need to have this logic and be focused on handling the REST
-requests, only. [EmailSpamService.java](src/main/java/de/jjakobus/emailrestservice/service/EmailSpamService.java) is a
+requests,
+only. [EmailSpamFilterService.java](src/main/java/de/jjakobus/emailrestservice/service/EmailSpamFilterService.java) is a
 service to schedule the
-regular spam classification task. It uses the store service to identify mails to be marked as spam.
+regular spam classification task. It uses the repository to identify mails to be marked as spam.
 
 ## Process
 
@@ -85,3 +86,5 @@ Next needed controller endpoints are added as specified by the whole-application
 test ([EmailRestServiceAppIT.java](src/test/java/de/jjakobus/emailrestservice/EmailRestServiceAppIT.java)). Based on
 this endpoints a unit test for the controller is created and test cases covering all request-response pairs possible are
 implemented. Services used by the controller are mocked to focus the unit test on the controller only.
+
+Finally services for storing and spam service are implemented with their each unit test.

@@ -1,7 +1,7 @@
 package de.jjakobus.emailrestservice.service;
 
+import de.jjakobus.emailrestservice.EmailTestUtils;
 import de.jjakobus.emailrestservice.model.Email;
-import de.jjakobus.emailrestservice.model.EmailAddress;
 import de.jjakobus.emailrestservice.model.EmailState;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
@@ -19,7 +19,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -210,32 +209,34 @@ class EmailStoreServiceTest {
 
     return Stream.of(
         Arguments.of(
-            Named.of("Draft email update (all fields except state)", createOrigEmailOfState(24, EmailState.DRAFT)),
+            Named.of("Draft email update (all fields except state)",
+                EmailTestUtils.createExampleEmailEntity(24, EmailState.DRAFT)),
             createUpdatedEmailOfState(24, EmailState.DRAFT)),
         Arguments.of(
-            Named.of("Draft email to sent (fields unchanged)", createOrigEmailOfState(24, EmailState.DRAFT)),
-            createOrigEmailOfState(24, EmailState.SENT)),
+            Named.of("Draft email to sent (fields unchanged)",
+                EmailTestUtils.createExampleEmailEntity(24, EmailState.DRAFT)),
+            EmailTestUtils.createExampleEmailEntity(24, EmailState.SENT)),
 
         Arguments.of(
-            Named.of("Sent email to SPAM", createOrigEmailOfState(42, EmailState.SENT)),
-            createOrigEmailOfState(42, EmailState.SPAM)),
+            Named.of("Sent email to SPAM", EmailTestUtils.createExampleEmailEntity(42, EmailState.SENT)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.SPAM)),
         Arguments.of(
-            Named.of("Sent email to DELETED", createOrigEmailOfState(42, EmailState.SENT)),
-            createOrigEmailOfState(42, EmailState.DELETED)),
+            Named.of("Sent email to DELETED", EmailTestUtils.createExampleEmailEntity(42, EmailState.SENT)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.DELETED)),
 
         Arguments.of(
-            Named.of("SPAM email to SENT", createOrigEmailOfState(42, EmailState.SPAM)),
-            createOrigEmailOfState(42, EmailState.SENT)),
+            Named.of("SPAM email to SENT", EmailTestUtils.createExampleEmailEntity(42, EmailState.SPAM)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.SENT)),
         Arguments.of(
-            Named.of("SPAM email to DELETED", createOrigEmailOfState(42, EmailState.SPAM)),
-            createOrigEmailOfState(42, EmailState.DELETED)),
+            Named.of("SPAM email to DELETED", EmailTestUtils.createExampleEmailEntity(42, EmailState.SPAM)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.DELETED)),
 
         Arguments.of(
-            Named.of("DELETED email to SENT", createOrigEmailOfState(42, EmailState.DELETED)),
-            createOrigEmailOfState(42, EmailState.SENT)),
+            Named.of("DELETED email to SENT", EmailTestUtils.createExampleEmailEntity(42, EmailState.DELETED)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.SENT)),
         Arguments.of(
-            Named.of("DELETED email to SPAM", createOrigEmailOfState(42, EmailState.DELETED)),
-            createOrigEmailOfState(42, EmailState.SPAM))
+            Named.of("DELETED email to SPAM", EmailTestUtils.createExampleEmailEntity(42, EmailState.DELETED)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.SPAM))
     );
   }
 
@@ -282,34 +283,36 @@ class EmailStoreServiceTest {
 
     return Stream.of(
         Arguments.of(
-            Named.of("Draft email to SENT (with updated fields)", createOrigEmailOfState(42, EmailState.DRAFT)),
+            Named.of("Draft email to SENT (with updated fields)",
+                EmailTestUtils.createExampleEmailEntity(42, EmailState.DRAFT)),
             createUpdatedEmailOfState(42, EmailState.SENT)),
         Arguments.of(
-            Named.of("Draft email to DELETE", createOrigEmailOfState(42, EmailState.DRAFT)),
-            createOrigEmailOfState(42, EmailState.DELETED)),
+            Named.of("Draft email to DELETE", EmailTestUtils.createExampleEmailEntity(42, EmailState.DRAFT)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.DELETED)),
         Arguments.of(
-            Named.of("Draft email to SPAM", createOrigEmailOfState(42, EmailState.DRAFT)),
-            createOrigEmailOfState(42, EmailState.SPAM)),
+            Named.of("Draft email to SPAM", EmailTestUtils.createExampleEmailEntity(42, EmailState.DRAFT)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.SPAM)),
 
         Arguments.of(
-            Named.of("DELETED email to DRAFT", createOrigEmailOfState(42, EmailState.DELETED)),
-            createOrigEmailOfState(42, EmailState.DRAFT)),
+            Named.of("DELETED email to DRAFT", EmailTestUtils.createExampleEmailEntity(42, EmailState.DELETED)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.DRAFT)),
         Arguments.of(
-            Named.of("SPAM email to DRAFT", createOrigEmailOfState(42, EmailState.SPAM)),
-            createOrigEmailOfState(42, EmailState.DRAFT)),
+            Named.of("SPAM email to DRAFT", EmailTestUtils.createExampleEmailEntity(42, EmailState.SPAM)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.DRAFT)),
         Arguments.of(
-            Named.of("SENT email to DRAFT", createOrigEmailOfState(42, EmailState.SENT)),
-            createOrigEmailOfState(42, EmailState.DRAFT)),
+            Named.of("SENT email to DRAFT", EmailTestUtils.createExampleEmailEntity(42, EmailState.SENT)),
+            EmailTestUtils.createExampleEmailEntity(42, EmailState.DRAFT)),
 
         Arguments.of(
-            Named.of("Non-draft email field changes", createOrigEmailOfState(42, EmailState.SENT)),
+            Named.of("Non-draft email field changes", EmailTestUtils.createExampleEmailEntity(42, EmailState.SENT)),
             createUpdatedEmailOfState(42, EmailState.SENT)),
         Arguments.of(
-            Named.of("Non-draft email field + state changes", createOrigEmailOfState(42, EmailState.SENT)),
+            Named.of("Non-draft email field + state changes",
+                EmailTestUtils.createExampleEmailEntity(42, EmailState.SENT)),
             createUpdatedEmailOfState(42, EmailState.DELETED)),
         Arguments.of(
-            Named.of("Changing ID of any email", createOrigEmailOfState(42, EmailState.DRAFT)),
-            createOrigEmailOfState(24, EmailState.DRAFT))
+            Named.of("Changing ID of any email", EmailTestUtils.createExampleEmailEntity(42, EmailState.DRAFT)),
+            EmailTestUtils.createExampleEmailEntity(24, EmailState.DRAFT))
     );
   }
 
@@ -369,41 +372,5 @@ class EmailStoreServiceTest {
     // Then
     // Verify saveAll(...) of repository has been called with updated emails.
     verify(emailRepository).saveAll(List.of(expectedDeletedEmail1, expectedDeletedEmail2));
-  }
-
-  private static Email createOrigEmailOfState(long id, EmailState state) {
-
-    Email email = new Email(
-        state,
-        new EmailAddress("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>"),
-        List.of(
-            new EmailAddress("juergen.vogel@web.de", null),
-            new EmailAddress("hans-peter@gmail.com", "Hans Peter")),
-        List.of(new EmailAddress("peter.lustig@gmail.com", "Peter Lustig")),
-        "Löwenzahn",
-        "Planung neuer Sendung",
-        new Date(42));
-    // Override id with given one.
-    email.setId(id);
-
-    return email;
-  }
-
-  private static Email createUpdatedEmailOfState(long id, EmailState state) {
-
-    Email email = new Email(
-        state,
-        new EmailAddress("juergen.vogel@web.de", null),
-        List.of(
-            new EmailAddress("peter.lustig@gmail.com", "Peter Lustig"),
-            new EmailAddress("peter.mueller@gmx.de", "Peter Müller <peter.mueller(a)gmx.de>")),
-        List.of(),
-        "Löwenzahn-NEU",
-        "Planung neuer Sendung, updated.",
-        new Date(76));
-    // Override id with given one.
-    email.setId(id);
-
-    return email;
   }
 }

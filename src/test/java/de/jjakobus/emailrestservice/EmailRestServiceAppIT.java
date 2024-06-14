@@ -1,15 +1,19 @@
 package de.jjakobus.emailrestservice;
 
 import de.jjakobus.emailrestservice.model.Email;
+import de.jjakobus.emailrestservice.model.EmailAddress;
 import de.jjakobus.emailrestservice.model.EmailState;
 import de.jjakobus.emailrestservice.model.dtos.EmailDto;
 import de.jjakobus.emailrestservice.model.dtos.InsertEmailDto;
+import de.jjakobus.emailrestservice.service.EmailSpamFilterService;
 import de.jjakobus.emailrestservice.service.repositories.EmailRepository;
+import org.awaitility.Durations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -27,6 +31,9 @@ import java.util.List;
 
 import static de.jjakobus.emailrestservice.EmailTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests the whole REST service in an integration-like test. Covers all REST endpoints by sending some exemplary
@@ -36,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {
+    "email-rest-service.spam-filter-cron=0/5 * * * * ?", // Run scheduled task every 5 seconds.
     "email-rest-service.request-path=/emails-test", // Control request path for tests.
     "spring.datasource.url=jdbc:tc:postgresql://localhost:5432/emails-test", // Use separate test database.
     "spring.datasource.username=test",
@@ -58,6 +66,9 @@ class EmailRestServiceAppIT {
           .withUsername("test")
           .withPassword("test")
           .withExposedPorts(5432);
+
+  @SpyBean
+  private EmailSpamFilterService spamFilterTask;
 
   /** The random port used for the application in test. */
   @LocalServerPort
@@ -90,6 +101,36 @@ class EmailRestServiceAppIT {
     // Insert new test data.
     Email exampleEntity = createExampleEmailEntity(42);
     storedEmail = emailRepository.save(exampleEntity);
+  }
+
+  @Test
+  void shouldRunSpamFilterScheduledTask() {
+    // Given
+    Email nonMatchingState = emailRepository.save(createExampleEmailEntity(101, EmailState.DRAFT));
+    Email nonMatchingAddress = emailRepository.save(createExampleEmailEntity(102, EmailState.SENT));
+    Email matchingAddressStub = createExampleEmailEntity(103, EmailState.SENT);
+    matchingAddressStub.setFrom(new EmailAddress("carl@gbtec.com", null));
+    Email matchingAddress = emailRepository.save(matchingAddressStub);
+
+    // When & Then
+    await().atMost(Durations.TEN_SECONDS).untilAsserted(() -> {
+      // Verify task has run at least once.
+      verify(spamFilterTask, atLeast(1)).classifySpamEmails();
+
+      // Check emails in store, matchingAddress email should have state SPAM now.
+      assertThat(emailRepository.findById(nonMatchingState.getId()))
+          .isPresent().get()
+          .as("Non-matching state email should have old state DRAFT.")
+          .returns(EmailState.DRAFT, Email::getState);
+      assertThat(emailRepository.findById(nonMatchingAddress.getId()))
+          .isPresent().get()
+          .as("Non-matching address email should have old state SENT.")
+          .returns(EmailState.SENT, Email::getState);
+      assertThat(emailRepository.findById(matchingAddress.getId()))
+          .isPresent().get()
+          .as("Matching address email should have new state SPAM.")
+          .returns(EmailState.SPAM, Email::getState);
+    });
   }
 
   /* Test CRUD endpoints exemplary. */
